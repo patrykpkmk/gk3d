@@ -6,13 +6,13 @@ namespace GK3D
 {
     public struct VertexPositionNormalColor : IVertexType
     {
-        public Vector3 Position;
+        public Vector3 _position;
         public Color Color;
         public Vector3 Normal;
 
         public VertexPositionNormalColor(Vector3 position, Vector3 normal, Color color)
         {
-            Position = position;
+            _position = position;
             Normal = normal;
             Color = color;
         }
@@ -28,5 +28,11 @@ namespace GK3D
         };
 
         public VertexDeclaration VertexDeclaration => new VertexDeclaration(VertexElements);
+
+        public Vector3 Position
+        {
+            get { return _position; }
+            set { _position = value; }
+        }
     }
 }

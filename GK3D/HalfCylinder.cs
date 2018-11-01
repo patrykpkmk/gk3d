@@ -11,109 +11,173 @@ namespace GK3D
 {
     public class HalfCylinder
     {
-        VertexPositionColor[] vertices; //later, I will provide another example with VertexPositionNormalTexture
+        public List<VertexPositionNormalColor> vertices;
+        //later, I will provide another example with VertexPositionNormalTexture
 
-        short[] indices; //my laptop can only afford Reach, no HiDef :(
+        public List<short> indices; //my laptop can only afford Reach, no HiDef :(
         float radius;
         private float height;
-        int nvertices, nindices;
-        BasicEffect effect;
-        GraphicsDevice graphics;
 
-        int m = 90;
+        int m = 24;
         private double angle;
 
 
-        public HalfCylinder(float rad, float h, GraphicsDevice graphics)
+        public HalfCylinder(float rad, float h)
         {
             height = h;
-            this.graphics = graphics;
-            nvertices = 2 * m + 2;
-            //traingles * 3
-            nindices = 3 * (2 * m+2 + 2 * (m - 1));
             radius = rad;
-            angle = Math.PI / (m - 1);
-            effect = new BasicEffect(this.graphics);
+            angle = Math.PI / (m);
 
             CreateVertices();
             CreateIndices();
-            effect.VertexColorEnabled = true;
+           RotateY(180);
+            RotateX(45);
         }
 
         private void CreateVertices()
         {
-            vertices = new VertexPositionColor[nvertices];
+            vertices = new List<VertexPositionNormalColor>();
             Vector3 center = new Vector3(0, 0, 0);
             int i = 0;
-            for (double alfa = 0; alfa <= Math.PI; alfa += angle)
+            var heightsCollection = new List<float>() {-height, height};
+            foreach (var y in heightsCollection)
             {
-                float x = (float) (center.X + radius * Math.Cos(alfa));
-                float y = (float) (center.Y - radius * Math.Sin(alfa));
-                vertices[i++] = new VertexPositionColor(new Vector3(x, y, height), Color.Green);
-                vertices[i++] = new VertexPositionColor(new Vector3(x, y, -height), Color.Green);
+                for (double alfa = 0; alfa <= Math.PI; alfa += angle)
+                {
+                    float x = (float) (center.X + radius * Math.Cos(alfa));
+                    float z = (float) (center.Z - radius * Math.Sin(alfa));
+                    vertices.Add(new VertexPositionNormalColor(new Vector3(x, y, z),GetNormal(new Vector3(x,y,z)), Color.Violet));
+                }
             }
-            vertices[i++] = new VertexPositionColor(new Vector3(0, 0, height), Color.Green);
-            vertices[i++] = new VertexPositionColor(new Vector3(0, 0, -height), Color.Green);
+            vertices.Add(new VertexPositionNormalColor(new Vector3(0, -height, 0), GetNormal(new Vector3(0, -1, 0)), Color.Violet));
+            //vertices.Add(new VertexPositionNormalColor(new Vector3(0, (float) height / 2, 0), new Vector3(1, 0, 0),
+            //    Color.Green));
+            vertices.Add(new VertexPositionNormalColor(new Vector3(0, height, 0), GetNormal(new Vector3(0, 1, 0)), Color.Violet));
+        }
+        private Vector3 GetNormal(Vector3 vertex)
+        {
+            Vector3 normal = new Vector3(vertex.X, vertex.Y, vertex.Z);
+            normal.Normalize();
+            return normal;
         }
 
         private void CreateIndices()
         {
-            indices = new short[nindices];
+            indices = new List<short>();
+
+            //wall
+            for (int i = 0; i <= m - 1; i++)
+            {
+                short lowerLeft = (short) i;
+                short lowerRight = (short) (i + 1);
+                short upperLeft = (short) (i + m + 1);
+                short upperRight = (short) (i + m + 2);
+
+                indices.Add(lowerLeft);
+                indices.Add(upperLeft);
+                indices.Add(lowerRight);
+
+                indices.Add(upperLeft);
+                indices.Add(upperRight);
+                indices.Add(lowerRight);
+            }
+
+
+            //bottom flor
+            for (int i = 0; i < m; i++)
+            {
+                indices.Add((short) (i));
+                indices.Add((short) (i + 1));
+                indices.Add((short) (vertices.Count - 2));
+            }
+
+            //top flor
+            for (int i = m + 1; i < 2 * m + 1; i++)
+            {
+                indices.Add((short) (i));
+                indices.Add((short) (vertices.Count - 1));
+                indices.Add((short) (i + 1));
+            }
+
+            //rear wall
+            //indices.Add((short)(0));
+            //indices.Add((short)(vertices.Count - 1));
+            //indices.Add((short)(vertices.Count - 2));
+
+            //indices.Add((short)(0));
+            //indices.Add((short)(m + 1));
+            //indices.Add((short)(vertices.Count - 1));
+
+            //indices.Add((short)(vertices.Count - 2));
+            //indices.Add((short)(2 * m + 1));
+            //indices.Add((short)(m));
+
+            //indices.Add((short)(vertices.Count - 2));
+            //indices.Add((short)(vertices.Count - 1));
+            //indices.Add((short)(2 * m + 1));
+
+
+
+            short lowerLeftA = (short)0;
+            short upperLeftA = (short)(m + 1);
+            short lowerRightA = (short)(m);
+            short upperRightA = (short)(2 * m + 1);
+
+            indices.Add(upperRightA);
+            indices.Add(upperLeftA);
+            indices.Add(lowerLeftA);
+
+
+            indices.Add(upperRightA);
+            indices.Add(lowerLeftA);
+
+            indices.Add(lowerRightA);
+
+
+        }
+
+        public void RotateX(int degrees)
+        {
+            List<Vector3> posPom= new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationX(MathHelper.ToRadians(degrees))));
+            }
             int i = 0;
-            for (short v = 2; v <= 2 * m - 1; v++)
+            foreach (var point in posPom)
             {
-                indices[i++] = (short) (v - 2);
-                indices[i++] = (short) (v - 1);
-                indices[i++] = v;
-            }
-
-            indices[i++] = (short)(nvertices - 2);
-            indices[i++] = (short)(nvertices - 1);
-            indices[i++] = 0;
-            
-            indices[i++] = (short)(nvertices - 1);
-            indices[i++] = 0;
-            indices[i++] = 1;
-
-            indices[i++] = (short)(nvertices - 4);
-            indices[i++] = (short)(nvertices - 3);
-            indices[i++] = (short)(nvertices - 2);
-
-            indices[i++] = (short)(nvertices - 3);
-            indices[i++] = (short)(nvertices - 2);
-            indices[i++] = (short)(nvertices - 1);
-
-
-
-            //Top surface
-            for (short v = 2; v < m*2; v+=2)
-            {
-                indices[i++] = (short)(v - 2);
-                indices[i++] = v;
-                indices[i++] = (short)(nvertices-2);
-            }
-            //Bottom surface
-            for (short v = 3; v < m * 2; v += 2)
-            {
-                indices[i++] = (short)(v - 2);
-                indices[i++] = v;
-                indices[i++] = (short)(nvertices - 1);
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
             }
         }
 
-        public void Draw(Matrix view, Matrix projection) // the camera class contains the View and Projection Matrices
+        public void RotateY(int degrees)
         {
-            effect.View = view;
-            effect.Projection = projection;
-
-            //TODO: Fill mode Solid or WireFrame
-            graphics.RasterizerState = new RasterizerState() {FillMode = FillMode.WireFrame};
-
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
             {
-                pass.Apply();
-                graphics.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, vertices, 0,
-                    nvertices, indices, 0, indices.Length / 3);
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationY(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void RotateZ(int degrees)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationZ(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
             }
         }
     }

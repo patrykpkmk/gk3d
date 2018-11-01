@@ -11,17 +11,13 @@ namespace GK3D
     public class Sphere
     {
         public VertexPositionNormalColor[] vertices;
-            //later, I will provide another example with VertexPositionNormalTexture
-
-        public short[] indices; //my laptop can only afford Reach, no HiDef :(
+        public short[] indices;
         float radius;
-        public int nvertices, nindices;
-        GraphicsDevice graphics;
+        private int nvertices, nindices;
 
-        public Sphere(float Radius, GraphicsDevice graphics)
+        public Sphere(float radius)
         {
-            radius = Radius;
-            this.graphics = graphics;
+            this.radius = radius;
             nvertices = 90 * 90; // 90 vertices in a circle, 90 circles in a sphere
             nindices = 90 * 90 * 6;
             CreateSphereVertices();
@@ -78,21 +74,5 @@ namespace GK3D
                 }
             }
         }
-
-        //public void Draw(Matrix view, Matrix projection) // the camera class contains the View and Projection Matrices
-        //{
-        //    basicEffect.View = view;
-        //    basicEffect.Projection = projection;
-
-        //    //TODO: Fill mode Solid or WireFrame
-        //    graphics.RasterizerState = new RasterizerState() {FillMode = FillMode.WireFrame};
-
-        //    foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
-        //    {
-        //        pass.Apply();
-        //        graphics.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, vertices, 0,
-        //            nvertices, indices, 0, indices.Length / 3);
-        //    }
-        //}
     }
 }
