@@ -14,36 +14,40 @@ namespace GK3D
         SpriteBatch spriteBatch;
         BasicEffect basicEffect;
 
-
-        //Camera
-        Vector3 cameraTarget;
-        Vector3 cameraPosition;
-        private Vector3 cameraUpVector;
+        private Camera camera;
         private Matrix worldMatrix;
         private Matrix viewMatrix;
         private Matrix projectionMatrix;
 
-        private Vector3 cameraForward;
-        private float cameraSpeed = 0.1f;
         private TimeSpan frameTime;
         private DateTime lastFrameTimeUpdate;
 
 
-        Sphere planetoidSphere;
         int planetoidSphereRadius;
         HalfSphere halfSphere;
         HalfCylinder halfCylinder;
-        private Model revolverModel;
         private Model robotModel;
+        private Model rocketModel;
+        private Model revolverModel;
 
-        private Model appleSatelliteModelOne;
+        Sphere planetoidSphere;
+        private Model appleModel;
 
-
+        private Vector3 appleStelliteOneTransaltion;
+        private Vector3 appleStelliteTwoTransaltion;
+        private Vector3 robotTransaltion;
+        private Vector3 robotRotation;
+        private Vector3 robotScale;
 
 
         private Effect phongEffect;
-        private Effect phongModelEffect;
+        private Effect phongEffectForModels;
+        private Effect phongEffectForRobotModel;
         private Vector3 viewVector;
+        private Matrix[] appleModelTransforms;
+        private Matrix[] robotModelTransforms;
+        private Matrix[] rocketModelTransforms;
+        private Matrix[] revolverModelTransforms;
 
         public Game1()
         {
@@ -62,15 +66,14 @@ namespace GK3D
             // TODO: Add your drawing code here
 
             //CAMERA MATRIX
-            cameraPosition = new Vector3(-10f, -10f, 15f);
-            cameraTarget = Vector3.Zero;
-            cameraUpVector = new Vector3(0, 1, 0);
+            camera = new Camera();
+
             viewMatrix = Matrix.CreateLookAt(
-                cameraPosition, cameraTarget, cameraUpVector);
-            cameraForward = new Vector3(0, 0, 1);
+                camera.CameraPosition, camera.CameraTarget, camera.CameraUpVector);
+
 
             //WORLD MATRIX
-            worldMatrix = Matrix.CreateWorld(cameraTarget, Vector3.
+            worldMatrix = Matrix.CreateWorld(camera.CameraTarget, Vector3.
                 Forward, Vector3.Up);
 
             //PROJECTION MATRIX
@@ -91,15 +94,20 @@ namespace GK3D
                 fieldOfView, aspectRatio, nearClipPlane, farClipPlane);
 
 
-            basicEffect = new BasicEffect(graphics.GraphicsDevice);
-            basicEffect.Alpha = 1f;
-            this.basicEffect.VertexColorEnabled = true;
+            //basicEffect = new BasicEffect(graphics.GraphicsDevice);
+            //basicEffect.Alpha = 1f;
+            //this.basicEffect.VertexColorEnabled = true;
+            //basicEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
 
             planetoidSphereRadius = 5;
             planetoidSphere = new Sphere(planetoidSphereRadius, graphics.GraphicsDevice);
             halfSphere = new HalfSphere(planetoidSphereRadius, graphics.GraphicsDevice);
             halfCylinder = new HalfCylinder(5, 10, graphics.GraphicsDevice);
 
+            appleStelliteOneTransaltion = new Vector3(10, 10, 0);
+            appleStelliteTwoTransaltion = new Vector3(-10, 0, 0);
+
+            robotScale = new Vector3(0.5f, 0.5f, 0.5f);
 
             base.Initialize();
         }
@@ -114,12 +122,26 @@ namespace GK3D
             spriteBatch = new SpriteBatch(GraphicsDevice);
             // TODO: use this.Content to load your game content here
 
-            revolverModel = Content.Load<Model>("Revolver");
+
+            appleModel = Content.Load<Model>("apple");
+            appleModelTransforms = new Matrix[appleModel.Bones.Count];
+            appleModel.CopyAbsoluteBoneTransformsTo(appleModelTransforms);
+
             robotModel = Content.Load<Model>("robot");
-            appleSatelliteModelOne = Content.Load<Model>("apple");
- 
+            robotModelTransforms = new Matrix[robotModel.Bones.Count];
+            robotModel.CopyAbsoluteBoneTransformsTo(robotModelTransforms);
+
+            rocketModel = Content.Load<Model>("rocket");
+            rocketModelTransforms = new Matrix[rocketModel.Bones.Count];
+            rocketModel.CopyAbsoluteBoneTransformsTo(rocketModelTransforms);
+
+            revolverModel = Content.Load<Model>("Revolver");
+            revolverModelTransforms = new Matrix[revolverModel.Bones.Count];
+            revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
+
             phongEffect = Content.Load<Effect>("Phong");
-            phongModelEffect = Content.Load<Effect>("Phong_model");
+            phongEffectForModels = Content.Load<Effect>("Phong_model");
+            phongEffectForRobotModel = Content.Load<Effect>("Phong_model");
         }
 
         /// <summary>
@@ -141,105 +163,13 @@ namespace GK3D
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            //// TODO: Add your update logic here
             frameTime = DateTime.Now - lastFrameTimeUpdate;
             if (frameTime.TotalMilliseconds == 0) return;
-
             var keyboardState = Keyboard.GetState();
-            var cameraMoveStep = (float) (cameraSpeed * frameTime.TotalMilliseconds);
 
-            //Forward/Backward
-            if (keyboardState.IsKeyDown(Keys.F))
-            {
-                cameraPosition -= cameraForward * cameraMoveStep;
-            }
-            if (keyboardState.IsKeyDown(Keys.B))
-            {
-                cameraPosition += cameraForward * cameraMoveStep;
-            }
-
-            //Left/Right
-            if (keyboardState.IsKeyDown(Keys.Left))
-            {
-                Vector3 perpendicularToForwardAndUp = Vector3.Cross(cameraUpVector, cameraForward);
-                perpendicularToForwardAndUp.Normalize();
-                cameraPosition -= perpendicularToForwardAndUp * cameraMoveStep;
-            }
-            if (keyboardState.IsKeyDown(Keys.Right))
-            {
-                Vector3 perpendicularToForwardAndUp = Vector3.Cross(cameraUpVector, cameraForward);
-                perpendicularToForwardAndUp.Normalize();
-                cameraPosition += perpendicularToForwardAndUp * cameraMoveStep;
-            }
-
-            //Up/Down
-            if (keyboardState.IsKeyDown(Keys.Up))
-            {
-                cameraPosition += cameraUpVector * cameraMoveStep;
-            }
-            if (keyboardState.IsKeyDown(Keys.Down))
-            {
-                cameraPosition -= cameraUpVector * cameraMoveStep;
-            }
-
-            //Look Up/Look Down (spogladanie gora i dol)
-            if (keyboardState.IsKeyDown(Keys.U))
-            {
-                var perpendicularToUpAndForward = Vector3.Cross(cameraUpVector, cameraForward);
-                perpendicularToUpAndForward.Normalize();
-                cameraForward = Vector3.Transform(cameraForward,
-                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(2 * cameraMoveStep)));
-                cameraUpVector = Vector3.Transform(cameraUpVector,
-                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(2 * cameraMoveStep)));
-                cameraForward.Normalize();
-                cameraUpVector.Normalize();
-            }
-
-            if (keyboardState.IsKeyDown(Keys.D))
-            {
-                var perpendicularToUpAndForward = Vector3.Cross(cameraUpVector, cameraForward);
-                perpendicularToUpAndForward.Normalize();
-                cameraForward = Vector3.Transform(cameraForward,
-                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
-                cameraUpVector = Vector3.Transform(cameraUpVector,
-                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
-                cameraForward.Normalize();
-                cameraUpVector.Normalize();
-            }
-
-            //Look Left/Look Right (rozlgladanie sie na boki)
-            if (keyboardState.IsKeyDown(Keys.L))
-            {
-                cameraForward = Vector3.Transform(cameraForward,
-                    Matrix.CreateFromAxisAngle(cameraUpVector, MathHelper.ToRadians(-2 * cameraMoveStep)));
-                cameraForward.Normalize();
-            }
-            if (keyboardState.IsKeyDown(Keys.R))
-            {
-                cameraForward = Vector3.Transform(cameraForward,
-                    Matrix.CreateFromAxisAngle(cameraUpVector, MathHelper.ToRadians(2 * cameraMoveStep)));
-                cameraForward.Normalize();
-            }
-
-            //Rotate
-            if (keyboardState.IsKeyDown(Keys.A))
-            {
-                cameraUpVector = Vector3.Transform(cameraUpVector,
-                    Matrix.CreateFromAxisAngle(cameraForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
-                cameraUpVector.Normalize();
-            }
-            if (keyboardState.IsKeyDown(Keys.S))
-            {
-                cameraUpVector = Vector3.Transform(cameraUpVector,
-                    Matrix.CreateFromAxisAngle(cameraForward, MathHelper.ToRadians(2 * cameraMoveStep)));
-                cameraUpVector.Normalize();
-            }
-
-
-            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraTarget,
-                cameraUpVector);
-
+            camera.Update(keyboardState, frameTime);
+            viewMatrix = Matrix.CreateLookAt(camera.CameraPosition, camera.CameraTarget,
+                camera.CameraUpVector);
 
             lastFrameTimeUpdate = DateTime.Now;
             base.Update(gameTime);
@@ -251,10 +181,18 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            InitializePhongEffect();
-            InitializePhongModelEffect();
+            InitializePhongEffectForSphereGrid();
+            InitializePhongEffectForAppleModel();
+            // InitializePhongEffectForRobotModel();
+
             DrawSphereWithEffect();
-            DrawAppleWithEffect();
+
+            DrawAppleSatteliteOne();
+            DrawAppleSatteliteTwo();
+
+            //DrawRobot();
+            DrawRocket();
+            DrawRevolver();
 
             //TODO: Drawing shapes
             //Draw planetoidSphere
@@ -263,18 +201,15 @@ namespace GK3D
             //halfCylinder.Draw(basicEffect.View, basicEffect.Projection);
             //DrawGround();
 
-            // DrawRevolver();
-            //DrawRobot();
-
 
             base.Draw(gameTime);
         }
 
-        private void InitializePhongEffect()
+        private void InitializePhongEffectForSphereGrid()
         {
             phongEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
             phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
-            viewVector = cameraTarget - cameraPosition;
+            viewVector = camera.CameraTarget - camera.CameraPosition;
             viewVector.Normalize();
 
             phongEffect.Parameters["World"].SetValue(worldMatrix);
@@ -286,12 +221,12 @@ namespace GK3D
             phongEffect.Parameters["Projection"].SetValue(projectionMatrix);
 
             phongEffect.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
-            phongEffect.Parameters["AmbientIntensity"].SetValue(0.01f);
+            phongEffect.Parameters["AmbientIntensity"].SetValue(0.02f);
 
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
             phongEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
-            Vector3 diffLightDir = new Vector3(-1, -1, 1);
+            Vector3 diffLightDir = new Vector3(-1, -1, 100);
             diffLightDir.Normalize();
             phongEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
             phongEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
@@ -304,44 +239,37 @@ namespace GK3D
             phongEffect.Parameters["ViewVector"].SetValue(viewVector);
         }
 
-        private Matrix[] transforms;
-        private void InitializePhongModelEffect()
+        private void InitializePhongEffectForAppleModel()
         {
-            phongModelEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
-            phongModelEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
-            viewVector = cameraTarget - cameraPosition;
+            phongEffectForModels.GraphicsDevice.Clear(Color.CornflowerBlue);
+            phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+            viewVector = camera.CameraTarget - camera.CameraPosition;
             viewVector.Normalize();
 
-            phongModelEffect.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
+            phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
 
+            phongEffectForModels.Parameters["View"].SetValue(viewMatrix);
+            phongEffectForModels.Parameters["Projection"].SetValue(projectionMatrix);
 
-            transforms = new Matrix[appleSatelliteModelOne.Bones.Count];
-            appleSatelliteModelOne.CopyAbsoluteBoneTransformsTo(transforms);
-
-            phongModelEffect.Parameters["View"].SetValue(viewMatrix);
-            phongModelEffect.Parameters["Projection"].SetValue(projectionMatrix);
-
-            phongModelEffect.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
-            phongModelEffect.Parameters["AmbientIntensity"].SetValue(0.01f);
+            phongEffectForModels.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
+            phongEffectForModels.Parameters["AmbientIntensity"].SetValue(0.02f);
 
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
-            phongModelEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
+            phongEffectForModels.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
             Vector3 diffLightDir = new Vector3(-1, -1, 1);
             diffLightDir.Normalize();
-            phongModelEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
-            phongModelEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
-            phongModelEffect.Parameters["DiffuseIntensity"].SetValue(0.75f);
+            phongEffectForModels.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
+            phongEffectForModels.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
+            phongEffectForModels.Parameters["DiffuseIntensity"].SetValue(0.75f);
 
-            phongModelEffect.Parameters["Shininess"].SetValue(100f);
-            phongModelEffect.Parameters["SpecularColor"].SetValue(Color.White.ToVector4());
-            phongModelEffect.Parameters["SpecularIntensity"].SetValue(0.5f);
+            phongEffectForModels.Parameters["Shininess"].SetValue(100f);
+            phongEffectForModels.Parameters["SpecularColor"].SetValue(Color.White.ToVector4());
+            phongEffectForModels.Parameters["SpecularIntensity"].SetValue(0.5f);
 
-            phongModelEffect.Parameters["ViewVector"].SetValue(viewVector);
-
-
-
+            phongEffectForModels.Parameters["ViewVector"].SetValue(viewVector);
         }
+
 
         private void DrawSphereWithEffect()
         {
@@ -369,100 +297,89 @@ namespace GK3D
             }
         }
 
-        private void DrawAppleWithEffect()
-        { 
-
-            foreach (ModelMesh mesh in appleSatelliteModelOne.Meshes)
+        private void DrawAppleSatteliteOne()
+        {
+            foreach (ModelMesh mesh in appleModel.Meshes)
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    phongModelEffect.Parameters["World"].SetValue(transforms[mesh.ParentBone.Index] * Matrix.CreateTranslation(new Vector3(10,10,0)));
-                    part.Effect = phongModelEffect;
+                    phongEffectForModels.Parameters["World"].SetValue(appleModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateTranslation(
+                                                                          appleStelliteOneTransaltion) * worldMatrix);
+
+
+                    part.Effect = phongEffectForModels;
                 }
-
-
-
-
                 mesh.Draw();
             }
         }
 
-        #region Models
-
-        public void DrawRevolver()
+        private void DrawAppleSatteliteTwo()
         {
-            // A model is composed of "Meshes" which are
-            // parts of the model which can be positioned
-            // independently, which can use different textures,
-            // and which can have different rendering states
-            // such as lighting applied.
-            foreach (var mesh in revolverModel.Meshes)
+            foreach (ModelMesh mesh in appleModel.Meshes)
             {
-                // "Effect" refers to a shader. Each mesh may
-                // have multiple shaders applied to it for more
-                // advanced visuals. 
-                foreach (BasicEffect effect in mesh.Effects)
+                foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    // We could set up custom lights, but this
-                    // is the quickest way to get somethign on screen:
-                    effect.EnableDefaultLighting();
-                    // This makes lighting look more realistic on
-                    // round surfaces, but at a slight performance cost:
-                    effect.PreferPerPixelLighting = true;
+                    phongEffectForModels.Parameters["World"].SetValue(appleModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateTranslation(
+                                                                          appleStelliteTwoTransaltion) * worldMatrix);
 
-                    // The world matrix can be used to position, rotate
-                    // or resize (scale) the model. Identity means that
-                    // the model is unrotated, drawn at the origin, and
-                    // its size is unchanged from the loaded content file.
-                    effect.World = Matrix.Identity;
-
-                    effect.View = viewMatrix;
-                    effect.Projection = projectionMatrix;
+                    part.Effect = phongEffectForModels;
                 }
-
-                // Now that we've assigned our properties on the effects we can
-                // draw the entire mesh
                 mesh.Draw();
             }
         }
 
-        public void DrawRobot()
+        private void DrawRobot()
         {
-            // A model is composed of "Meshes" which are
-            // parts of the model which can be positioned
-            // independently, which can use different textures,
-            // and which can have different rendering states
-            // such as lighting applied.
-            foreach (var mesh in robotModel.Meshes)
+            foreach (ModelMesh mesh in robotModel.Meshes)
             {
-                // "Effect" refers to a shader. Each mesh may
-                // have multiple shaders applied to it for more
-                // advanced visuals. 
-                foreach (BasicEffect effect in mesh.Effects)
+                foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    // We could set up custom lights, but this
-                    // is the quickest way to get somethign on screen:
-                    effect.EnableDefaultLighting();
-                    // This makes lighting look more realistic on
-                    // round surfaces, but at a slight performance cost:
-                    effect.PreferPerPixelLighting = true;
-
-                    // The world matrix can be used to position, rotate
-                    // or resize (scale) the model. Identity means that
-                    // the model is unrotated, drawn at the origin, and
-                    // its size is unchanged from the loaded content file.
-                    effect.World = Matrix.Identity;
-
-                    effect.View = viewMatrix;
-                    effect.Projection = projectionMatrix;
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Blue.ToVector4());
+                    //phongEffectForModels.Parameters["World"].SetValue(robotModelTransforms[mesh.ParentBone.Index] *
+                    //                                                    Matrix.CreateTranslation(
+                    //                                                        new Vector3( 0.5f,0.5f,0.5f)));
+                    part.Effect = phongEffectForModels;
                 }
-
-                // Now that we've assigned our properties on the effects we can
-                // draw the entire mesh
                 mesh.Draw();
             }
         }
 
-        #endregion
+        private void DrawRocket()
+        {
+            foreach (ModelMesh mesh in rocketModel.Meshes)
+            {
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Yellow.ToVector4());
+                    phongEffectForModels.Parameters["World"].SetValue(rocketModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateScale(new Vector3(0.02f, 0.02f, 0.02f)) *
+                                                                      Matrix.CreateTranslation(
+                                                                          new Vector3(-1f, 17f, -15f)));
+                    part.Effect = phongEffectForModels;
+                }
+                mesh.Draw();
+            }
+        }
+
+        private void DrawRevolver()
+        {
+            foreach (ModelMesh mesh in revolverModel.Meshes)
+            {
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.OrangeRed.ToVector4());
+                    phongEffectForModels.Parameters["World"].SetValue(revolverModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateScale(new Vector3(0.01f, 0.01f, 0.01f)) *
+                                                                      Matrix.CreateRotationY(MathHelper.ToRadians(45)) *
+                                                                      Matrix.CreateRotationZ(MathHelper.ToRadians(-5)) *
+                                                                      Matrix.CreateTranslation(
+                                                                          new Vector3(-20f, 0f, -25f)));
+                    part.Effect = phongEffectForModels;
+                }
+                mesh.Draw();
+            }
+        }
     }
 }

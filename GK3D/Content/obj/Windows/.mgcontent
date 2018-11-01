@@ -5,12 +5,18 @@
   <Config />
   <SourceFiles>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/apple.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/dog.FBX</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Phong.fx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Phong_model.fx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Revolver.fbx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/robot.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/rocket.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/spaceship.fbx</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

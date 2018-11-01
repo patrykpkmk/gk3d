@@ -47,3 +47,6 @@ C:\Gk3drepo\gk3d\GK3D\obj\x86\Debug\GK3D.pdb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\Phong.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\apple.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\Phong_model.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\rocket.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\spaceship.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\dog.xnb
