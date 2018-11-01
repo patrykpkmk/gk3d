@@ -10,29 +10,27 @@ namespace GK3D
 {
     public class Sphere
     {
-        VertexPositionColor[] vertices; //later, I will provide another example with VertexPositionNormalTexture
+        public VertexPositionNormalColor[] vertices;
+            //later, I will provide another example with VertexPositionNormalTexture
 
-        short[] indices; //my laptop can only afford Reach, no HiDef :(
+        public short[] indices; //my laptop can only afford Reach, no HiDef :(
         float radius;
-        int nvertices, nindices;
-        BasicEffect effect;
+        public int nvertices, nindices;
         GraphicsDevice graphics;
 
         public Sphere(float Radius, GraphicsDevice graphics)
         {
             radius = Radius;
             this.graphics = graphics;
-            effect = new BasicEffect(this.graphics);
             nvertices = 90 * 90; // 90 vertices in a circle, 90 circles in a sphere
             nindices = 90 * 90 * 6;
             CreateSphereVertices();
             CreateIndices();
-            effect.VertexColorEnabled = true;
         }
 
         private void CreateSphereVertices()
         {
-            vertices = new VertexPositionColor[nvertices];
+            vertices = new VertexPositionNormalColor[nvertices];
             Vector3 center = new Vector3(0, 0, 0);
             Vector3 rad = new Vector3((float) Math.Abs(radius), 0, 0);
             for (int x = 0; x < 90; x++) //90 circles, difference between each is 4 degrees
@@ -45,9 +43,16 @@ namespace GK3D
                     Matrix yrot = Matrix.CreateRotationY(MathHelper.ToRadians(x * difx)); // rotate circle around y
                     Vector3 point = Vector3.Transform(Vector3.Transform(rad, zrot), yrot); //transformation
 
-                    vertices[x + y * 90] = new VertexPositionColor(point, Color.Green);
+                    vertices[x + y * 90] = new VertexPositionNormalColor(point, GetNormal(point), Color.Green);
                 }
             }
+        }
+
+        private Vector3 GetNormal(Vector3 vertex)
+        {
+            Vector3 normal = new Vector3(vertex.X, vertex.Y, vertex.Z);
+            normal.Normalize();
+            return normal;
         }
 
         private void CreateIndices()
@@ -74,20 +79,20 @@ namespace GK3D
             }
         }
 
-        public void Draw(Matrix view, Matrix projection) // the camera class contains the View and Projection Matrices
-        {
-            effect.View = view;
-            effect.Projection = projection;
-            
-            //TODO: Fill mode Solid or WireFrame
-            graphics.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+        //public void Draw(Matrix view, Matrix projection) // the camera class contains the View and Projection Matrices
+        //{
+        //    basicEffect.View = view;
+        //    basicEffect.Projection = projection;
 
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                graphics.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, vertices, 0,
-                    nvertices, indices, 0, indices.Length / 3);
-            }
-        }
+        //    //TODO: Fill mode Solid or WireFrame
+        //    graphics.RasterizerState = new RasterizerState() {FillMode = FillMode.WireFrame};
+
+        //    foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+        //    {
+        //        pass.Apply();
+        //        graphics.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, vertices, 0,
+        //            nvertices, indices, 0, indices.Length / 3);
+        //    }
+        //}
     }
 }

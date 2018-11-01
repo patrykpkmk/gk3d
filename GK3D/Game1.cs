@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,19 +10,40 @@ namespace GK3D
     /// </summary>
     public class Game1 : Game
     {
-        private Matrix cameraMatrix;
-        private Matrix projectionMatrix;
-
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        BasicEffect effect;
+        BasicEffect basicEffect;
+
+
+        //Camera
+        Vector3 cameraTarget;
+        Vector3 cameraPosition;
+        private Vector3 cameraUpVector;
+        private Matrix worldMatrix;
+        private Matrix viewMatrix;
+        private Matrix projectionMatrix;
+
+        private Vector3 cameraForward;
+        private float cameraSpeed = 0.1f;
+        private TimeSpan frameTime;
+        private DateTime lastFrameTimeUpdate;
+
+
         Sphere planetoidSphere;
         int planetoidSphereRadius;
         HalfSphere halfSphere;
         HalfCylinder halfCylinder;
-
         private Model revolverModel;
         private Model robotModel;
+
+        private Model appleSatelliteModelOne;
+
+
+
+
+        private Effect phongEffect;
+        private Effect phongModelEffect;
+        private Vector3 viewVector;
 
         public Game1()
         {
@@ -37,12 +59,48 @@ namespace GK3D
         /// </summary>
         protected override void Initialize()
         {
-            planetoidSphereRadius = 25;
+            // TODO: Add your drawing code here
+
+            //CAMERA MATRIX
+            cameraPosition = new Vector3(-10f, -10f, 15f);
+            cameraTarget = Vector3.Zero;
+            cameraUpVector = new Vector3(0, 1, 0);
+            viewMatrix = Matrix.CreateLookAt(
+                cameraPosition, cameraTarget, cameraUpVector);
+            cameraForward = new Vector3(0, 0, 1);
+
+            //WORLD MATRIX
+            worldMatrix = Matrix.CreateWorld(cameraTarget, Vector3.
+                Forward, Vector3.Up);
+
+            //PROJECTION MATRIX
+            // We want the aspect ratio of our display to match
+            // the entire screen's aspect ratio:
+            float aspectRatio =
+                graphics.PreferredBackBufferWidth / (float) graphics.PreferredBackBufferHeight;
+            // Field of view measures how wide of a view our camera has.
+            // Increasing this value means it has a wider view, making everything
+            // on screen smaller. This is conceptually the same as "zooming out".
+            // It also 
+            float fieldOfView = MathHelper.ToRadians(45f);
+            // Anything closer than this will not be drawn (will be clipped)
+            float nearClipPlane = 1f;
+            // Anything further than this will not be drawn (will be clipped)
+            float farClipPlane = 1000f;
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                fieldOfView, aspectRatio, nearClipPlane, farClipPlane);
+
+
+            basicEffect = new BasicEffect(graphics.GraphicsDevice);
+            basicEffect.Alpha = 1f;
+            this.basicEffect.VertexColorEnabled = true;
+
+            planetoidSphereRadius = 5;
             planetoidSphere = new Sphere(planetoidSphereRadius, graphics.GraphicsDevice);
             halfSphere = new HalfSphere(planetoidSphereRadius, graphics.GraphicsDevice);
             halfCylinder = new HalfCylinder(5, 10, graphics.GraphicsDevice);
 
-            effect = new BasicEffect(graphics.GraphicsDevice);
+
             base.Initialize();
         }
 
@@ -58,6 +116,10 @@ namespace GK3D
 
             revolverModel = Content.Load<Model>("Revolver");
             robotModel = Content.Load<Model>("robot");
+            appleSatelliteModelOne = Content.Load<Model>("apple");
+ 
+            phongEffect = Content.Load<Effect>("Phong");
+            phongModelEffect = Content.Load<Effect>("Phong_model");
         }
 
         /// <summary>
@@ -80,8 +142,106 @@ namespace GK3D
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            //// TODO: Add your update logic here
+            frameTime = DateTime.Now - lastFrameTimeUpdate;
+            if (frameTime.TotalMilliseconds == 0) return;
 
+            var keyboardState = Keyboard.GetState();
+            var cameraMoveStep = (float) (cameraSpeed * frameTime.TotalMilliseconds);
+
+            //Forward/Backward
+            if (keyboardState.IsKeyDown(Keys.F))
+            {
+                cameraPosition -= cameraForward * cameraMoveStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.B))
+            {
+                cameraPosition += cameraForward * cameraMoveStep;
+            }
+
+            //Left/Right
+            if (keyboardState.IsKeyDown(Keys.Left))
+            {
+                Vector3 perpendicularToForwardAndUp = Vector3.Cross(cameraUpVector, cameraForward);
+                perpendicularToForwardAndUp.Normalize();
+                cameraPosition -= perpendicularToForwardAndUp * cameraMoveStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.Right))
+            {
+                Vector3 perpendicularToForwardAndUp = Vector3.Cross(cameraUpVector, cameraForward);
+                perpendicularToForwardAndUp.Normalize();
+                cameraPosition += perpendicularToForwardAndUp * cameraMoveStep;
+            }
+
+            //Up/Down
+            if (keyboardState.IsKeyDown(Keys.Up))
+            {
+                cameraPosition += cameraUpVector * cameraMoveStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.Down))
+            {
+                cameraPosition -= cameraUpVector * cameraMoveStep;
+            }
+
+            //Look Up/Look Down (spogladanie gora i dol)
+            if (keyboardState.IsKeyDown(Keys.U))
+            {
+                var perpendicularToUpAndForward = Vector3.Cross(cameraUpVector, cameraForward);
+                perpendicularToUpAndForward.Normalize();
+                cameraForward = Vector3.Transform(cameraForward,
+                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(2 * cameraMoveStep)));
+                cameraUpVector = Vector3.Transform(cameraUpVector,
+                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(2 * cameraMoveStep)));
+                cameraForward.Normalize();
+                cameraUpVector.Normalize();
+            }
+
+            if (keyboardState.IsKeyDown(Keys.D))
+            {
+                var perpendicularToUpAndForward = Vector3.Cross(cameraUpVector, cameraForward);
+                perpendicularToUpAndForward.Normalize();
+                cameraForward = Vector3.Transform(cameraForward,
+                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
+                cameraUpVector = Vector3.Transform(cameraUpVector,
+                    Matrix.CreateFromAxisAngle(perpendicularToUpAndForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
+                cameraForward.Normalize();
+                cameraUpVector.Normalize();
+            }
+
+            //Look Left/Look Right (rozlgladanie sie na boki)
+            if (keyboardState.IsKeyDown(Keys.L))
+            {
+                cameraForward = Vector3.Transform(cameraForward,
+                    Matrix.CreateFromAxisAngle(cameraUpVector, MathHelper.ToRadians(-2 * cameraMoveStep)));
+                cameraForward.Normalize();
+            }
+            if (keyboardState.IsKeyDown(Keys.R))
+            {
+                cameraForward = Vector3.Transform(cameraForward,
+                    Matrix.CreateFromAxisAngle(cameraUpVector, MathHelper.ToRadians(2 * cameraMoveStep)));
+                cameraForward.Normalize();
+            }
+
+            //Rotate
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                cameraUpVector = Vector3.Transform(cameraUpVector,
+                    Matrix.CreateFromAxisAngle(cameraForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
+                cameraUpVector.Normalize();
+            }
+            if (keyboardState.IsKeyDown(Keys.S))
+            {
+                cameraUpVector = Vector3.Transform(cameraUpVector,
+                    Matrix.CreateFromAxisAngle(cameraForward, MathHelper.ToRadians(2 * cameraMoveStep)));
+                cameraUpVector.Normalize();
+            }
+
+
+            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraTarget,
+                cameraUpVector);
+
+
+            lastFrameTimeUpdate = DateTime.Now;
             base.Update(gameTime);
         }
 
@@ -91,52 +251,143 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // TODO: Add your drawing code here
-            var cameraPosition = new Vector3(50, 50, 50);
-            var cameraLookAtVector = Vector3.Zero;
-            var cameraUpVector = Vector3.UnitZ;
-            cameraMatrix = Matrix.CreateLookAt(
-                cameraPosition, cameraLookAtVector, cameraUpVector);;
-
-            effect.View = cameraMatrix;
-
-
-            // We want the aspect ratio of our display to match
-            // the entire screen's aspect ratio:
-            float aspectRatio =
-                graphics.PreferredBackBufferWidth / (float)graphics.PreferredBackBufferHeight;
-            // Field of view measures how wide of a view our camera has.
-            // Increasing this value means it has a wider view, making everything
-            // on screen smaller. This is conceptually the same as "zooming out".
-            // It also 
-            float fieldOfView = Microsoft.Xna.Framework.MathHelper.PiOver4;
-            // Anything closer than this will not be drawn (will be clipped)
-            float nearClipPlane = 1;
-            // Anything further than this will not be drawn (will be clipped)
-            float farClipPlane = 200;
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                fieldOfView, aspectRatio, nearClipPlane, farClipPlane);
-
-            effect.Projection = projectionMatrix;
+            InitializePhongEffect();
+            InitializePhongModelEffect();
+            DrawSphereWithEffect();
+            DrawAppleWithEffect();
 
             //TODO: Drawing shapes
             //Draw planetoidSphere
-            //planetoidSphere.Draw(effect.View, effect.Projection);
-            //halfSphere.Draw(effect.View, effect.Projection);
-            //halfCylinder.Draw(effect.View, effect.Projection);
+            //  planetoidSphere.Draw(basicEffect.View, basicEffect.Projection);
+            //halfSphere.Draw(basicEffect.View, basicEffect.Projection);
+            //halfCylinder.Draw(basicEffect.View, basicEffect.Projection);
             //DrawGround();
 
-          // DrawRevolver();
-           DrawRobot();
-            
-            
+            // DrawRevolver();
+            //DrawRobot();
 
 
             base.Draw(gameTime);
         }
 
+        private void InitializePhongEffect()
+        {
+            phongEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
+            phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+            viewVector = cameraTarget - cameraPosition;
+            viewVector.Normalize();
+
+            phongEffect.Parameters["World"].SetValue(worldMatrix);
+            phongEffect.Parameters["View"].SetValue(viewMatrix);
+            phongEffect.Parameters["Projection"].SetValue(projectionMatrix);
+
+            phongEffect.Parameters["World"].SetValue(worldMatrix);
+            phongEffect.Parameters["View"].SetValue(viewMatrix);
+            phongEffect.Parameters["Projection"].SetValue(projectionMatrix);
+
+            phongEffect.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
+            phongEffect.Parameters["AmbientIntensity"].SetValue(0.01f);
+
+            Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
+            phongEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
+
+            Vector3 diffLightDir = new Vector3(-1, -1, 1);
+            diffLightDir.Normalize();
+            phongEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
+            phongEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
+            phongEffect.Parameters["DiffuseIntensity"].SetValue(0.75f);
+
+            phongEffect.Parameters["Shininess"].SetValue(100f);
+            phongEffect.Parameters["SpecularColor"].SetValue(Color.White.ToVector4());
+            phongEffect.Parameters["SpecularIntensity"].SetValue(0.5f);
+
+            phongEffect.Parameters["ViewVector"].SetValue(viewVector);
+        }
+
+        private Matrix[] transforms;
+        private void InitializePhongModelEffect()
+        {
+            phongModelEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
+            phongModelEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+            viewVector = cameraTarget - cameraPosition;
+            viewVector.Normalize();
+
+            phongModelEffect.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
+
+
+            transforms = new Matrix[appleSatelliteModelOne.Bones.Count];
+            appleSatelliteModelOne.CopyAbsoluteBoneTransformsTo(transforms);
+
+            phongModelEffect.Parameters["View"].SetValue(viewMatrix);
+            phongModelEffect.Parameters["Projection"].SetValue(projectionMatrix);
+
+            phongModelEffect.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
+            phongModelEffect.Parameters["AmbientIntensity"].SetValue(0.01f);
+
+            Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
+            phongModelEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
+
+            Vector3 diffLightDir = new Vector3(-1, -1, 1);
+            diffLightDir.Normalize();
+            phongModelEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
+            phongModelEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
+            phongModelEffect.Parameters["DiffuseIntensity"].SetValue(0.75f);
+
+            phongModelEffect.Parameters["Shininess"].SetValue(100f);
+            phongModelEffect.Parameters["SpecularColor"].SetValue(Color.White.ToVector4());
+            phongModelEffect.Parameters["SpecularIntensity"].SetValue(0.5f);
+
+            phongModelEffect.Parameters["ViewVector"].SetValue(viewVector);
+
+
+
+        }
+
+        private void DrawSphereWithEffect()
+        {
+            //basicEffect.World = worldMatrix;
+            //basicEffect.View = viewMatrix;
+            //basicEffect.Projection = projectionMatrix;
+
+            //foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            //{
+            //    pass.Apply();
+            //    GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
+            //        planetoidSphere.vertices, 0,
+            //        planetoidSphere.nvertices, planetoidSphere.indices, 0, planetoidSphere.indices.Length / 3);
+            //}
+
+
+            //PHONG
+            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                    PrimitiveType.TriangleList,
+                    planetoidSphere.vertices, 0,
+                    planetoidSphere.nvertices, planetoidSphere.indices, 0, planetoidSphere.indices.Length / 3);
+            }
+        }
+
+        private void DrawAppleWithEffect()
+        { 
+
+            foreach (ModelMesh mesh in appleSatelliteModelOne.Meshes)
+            {
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    phongModelEffect.Parameters["World"].SetValue(transforms[mesh.ParentBone.Index] * Matrix.CreateTranslation(new Vector3(10,10,0)));
+                    part.Effect = phongModelEffect;
+                }
+
+
+
+
+                mesh.Draw();
+            }
+        }
+
+        #region Models
 
         public void DrawRevolver()
         {
@@ -165,7 +416,7 @@ namespace GK3D
                     // its size is unchanged from the loaded content file.
                     effect.World = Matrix.Identity;
 
-                    effect.View = cameraMatrix;
+                    effect.View = viewMatrix;
                     effect.Projection = projectionMatrix;
                 }
 
@@ -174,6 +425,7 @@ namespace GK3D
                 mesh.Draw();
             }
         }
+
         public void DrawRobot()
         {
             // A model is composed of "Meshes" which are
@@ -201,7 +453,7 @@ namespace GK3D
                     // its size is unchanged from the loaded content file.
                     effect.World = Matrix.Identity;
 
-                    effect.View = cameraMatrix;
+                    effect.View = viewMatrix;
                     effect.Projection = projectionMatrix;
                 }
 
@@ -211,5 +463,6 @@ namespace GK3D
             }
         }
 
+        #endregion
     }
 }
