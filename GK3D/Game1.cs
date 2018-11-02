@@ -276,8 +276,8 @@ namespace GK3D
             phongEffectForSphere.Parameters["SpotlightOneLightPosition"].SetValue(lights.SpotlightOneLightPosition);
             phongEffectForSphere.Parameters["SpotlightOneSpotDirection"].SetValue(lights.SpotlightOneSpotDirection);
             phongEffectForSphere.Parameters["SpotlightOneLightRadius"].SetValue(50f);
-            phongEffectForSphere.Parameters["SpotlightOneSpotDecayExponent"].SetValue(2f);
-            phongEffectForSphere.Parameters["SpotlightOneSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(30)));
+            phongEffectForSphere.Parameters["SpotlightOneSpotDecayExponent"].SetValue(5f);
+            phongEffectForSphere.Parameters["SpotlightOneSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(10)));
             phongEffectForSphere.Parameters["SpotlightOneDiffuseColor"].SetValue(lights.SpotlightOneDiffuseColor);
             phongEffectForSphere.Parameters["SpotlightOneSpecularColor"].SetValue(lights.SpotlightOneSpecularColor);
 
