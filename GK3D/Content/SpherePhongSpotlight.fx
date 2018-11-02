@@ -27,12 +27,16 @@ float3 SpotlightOneSpotDirection = float3(0,-1,0);
 float SpotlightOneLightRadius = 5.0f;
 float SpotlightOneSpotDecayExponent = 5.0f;
 float SpotlightOneSpotLightAngleCosine = 0.2f;
+float4 SpotlightOneDiffuseColor = float4(1, 1, 1, 1); 
+float4 SpotlightOneSpecularColor = float4(1, 1, 1, 1); 
 
 float3 SpotlightTwoLightPosition = float3(0,20,0);
 float3 SpotlightTwoSpotDirection = float3(0,-1,0);
 float SpotlightTwoLightRadius = 5.0f;
 float SpotlightTwoSpotDecayExponent = 5.0f;
 float SpotlightTwoSpotLightAngleCosine = 0.2f;
+float4 SpotlightTwoDiffuseColor = float4(1, 1, 1, 1); 
+float4 SpotlightTwoSpecularColor = float4(1, 1, 1, 1); 
 
 struct VertexShaderInput
 {
@@ -78,12 +82,12 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	{
 		float spotIntensity = pow(SdL,SpotlightOneSpotDecayExponent);
 		float lightIntensity = dot(normal, lightVector);
-		float4 diffuse = DiffuseColor * DiffuseIntensity * lightIntensity;
+		float4 diffuse = SpotlightOneDiffuseColor * DiffuseIntensity * lightIntensity;
 	
 		float3 r = normalize(2 * dot(normal, lightVector) * normal - lightVector);
 		float3 v = normalize(mul(normalize(ViewVector), World));
 		float dotProduct = -dot(r, v);
-		float4 specular = SpecularIntensity * SpecularColor * max(pow(dotProduct, Shininess), 0) * length(input.Color);
+		float4 specular = SpecularIntensity * SpotlightOneSpecularColor * max(pow(dotProduct, Shininess), 0) * length(input.Color);
 		
 		firstSpotLightColor = saturate(firstSpotLightColor + attenuation * spotIntensity * (max(diffuse, 0) + max(0,specular)) );
 	}
@@ -96,12 +100,12 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	{
 		float spotIntensity2 = pow(SdL2,SpotlightTwoSpotDecayExponent);
 		float lightIntensity2 = dot(normal, lightVector2);
-		float4 diffuse2 = DiffuseColor * DiffuseIntensity * lightIntensity2;
+		float4 diffuse2 = SpotlightTwoDiffuseColor * DiffuseIntensity * lightIntensity2;
 	
 		float3 r2 = normalize(2 * dot(normal, lightVector2) * normal - lightVector2);
 		float3 v2 = normalize(mul(normalize(ViewVector), World));
 		float dotProduct2 = -dot(r2, v2);
-		float4 specular2 = SpecularIntensity * SpecularColor * max(pow(dotProduct2, Shininess), 0) * length(input.Color);
+		float4 specular2 = SpecularIntensity * SpotlightTwoSpecularColor * max(pow(dotProduct2, Shininess), 0) * length(input.Color);
 
 		secondSpotLightColor = secondSpotLightColor + saturate(attenuation2 * spotIntensity2 * (max(diffuse2, 0) + max(0,specular2)) );
 	}
