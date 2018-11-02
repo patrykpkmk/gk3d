@@ -8,7 +8,7 @@ namespace GK3D
     {
         public Camera()
         {
-            CameraPosition = new Vector3(0f, -5f, 35f);
+            CameraPosition = new Vector3(0f, 0f, 75f);
             CameraTarget = Vector3.Zero;
             CameraUpVector = new Vector3(0, 1, 0);
             CameraForward = new Vector3(0, 0, 1);

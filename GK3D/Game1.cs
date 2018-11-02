@@ -32,6 +32,7 @@ namespace GK3D
 
         Sphere planetoidSphere;
         HalfSphere halfSphere;
+        HalfSphere halfSphereTwo;
 
         private Model appleModel;
 
@@ -97,13 +98,25 @@ namespace GK3D
             //this.basicEffect.VertexColorEnabled = true;
             //basicEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            planetoidSphereRadius = 8;
+            planetoidSphereRadius = 15;
             planetoidSphere = new Sphere(planetoidSphereRadius);
-            halfSphere = new HalfSphere(planetoidSphereRadius);
-            halfCylinder = new HalfCylinder(3, 3);
 
-            appleStelliteOneTransaltion = new Vector3(10, 10, 0);
-            appleStelliteTwoTransaltion = new Vector3(-10, 0, 0);
+            halfSphere = new HalfSphere(planetoidSphereRadius, Color.Black);
+            halfSphere.RotateZ(180);
+            halfSphere.Translate(new Vector3(0, -75, 0));
+            halfSphere.Scale(0.2f);
+
+            halfSphereTwo = new HalfSphere(planetoidSphereRadius, Color.Magenta);
+            halfSphereTwo.Translate(new Vector3(0, -104, 0));
+            halfSphereTwo.Scale(0.2f);
+
+            halfCylinder = new HalfCylinder(4, 8, Color.Blue);
+            halfCylinder.Scale(0.5f);
+            halfCylinder.RotateY(180);
+            halfCylinder.Translate(new Vector3(0, -24.1f, 0));
+
+            appleStelliteOneTransaltion = new Vector3(25, 25, 0);
+            appleStelliteTwoTransaltion = new Vector3(-25, 0, 0);
 
             base.Initialize();
         }
@@ -177,24 +190,16 @@ namespace GK3D
         protected override void Draw(GameTime gameTime)
         {
             InitializePhongEffectForSphereGrid();
-            //InitializePhongEffectForAppleModel();
-           // DrawSphereWithEffect();
-           // DrawHalfSphereWithEffect();
+            InitializePhongEffectForAppleModel();
+            DrawSphereWithEffect();
+            DrawHalfSphereWithEffect();
+            DrawHalfSphereTwoWithEffect();
             DrawHalfCylinderWithEffect();
 
-            //DrawAppleSatteliteOne();
-            //DrawAppleSatteliteTwo();
-            //DrawRocket();
-            //DrawRevolver();
-
-
-            //TODO: Drawing shapes
-            //Draw planetoidSphere
-            //planetoidSphere.Draw(basicEffect.View, basicEffect.Projection);
-            //halfSphere.Draw(basicEffect.View, basicEffect.Projection);
-            //halfCylinder.Draw(basicEffect.View, basicEffect.Projection);
-            //DrawGround();
-
+            DrawAppleSatteliteOne();
+            DrawAppleSatteliteTwo();
+            DrawRocket();
+            DrawRevolver();
 
             base.Draw(gameTime);
         }
@@ -236,7 +241,7 @@ namespace GK3D
         private void InitializePhongEffectForAppleModel()
         {
             phongEffectForModels.GraphicsDevice.Clear(Color.CornflowerBlue);
-            phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.WireFrame};
+            phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
             viewVector = camera.CameraTarget - camera.CameraPosition;
             viewVector.Normalize();
 
@@ -289,12 +294,24 @@ namespace GK3D
             }
         }
 
+        private void DrawHalfSphereTwoWithEffect()
+        {
+            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                    PrimitiveType.TriangleList,
+                    halfSphereTwo.vertices, 0,
+                    halfSphereTwo.vertices.Length, halfSphereTwo.indices, 0, halfSphereTwo.indices.Length / 3);
+            }
+        }
+
         private void DrawHalfCylinderWithEffect()
         {
             foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                
+
 
                 phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
                     PrimitiveType.TriangleList,
@@ -340,11 +357,12 @@ namespace GK3D
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Yellow.ToVector4());
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Brown.ToVector4());
                     phongEffectForModels.Parameters["World"].SetValue(rocketModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateRotationX(MathHelper.ToRadians(-45)) *
                                                                       Matrix.CreateScale(new Vector3(0.02f, 0.02f, 0.02f)) *
                                                                       Matrix.CreateTranslation(
-                                                                          new Vector3(-1f, 17f, -15f)));
+                                                                          new Vector3(-10f, 27f, -25f)));
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();
@@ -363,7 +381,7 @@ namespace GK3D
                                                                       Matrix.CreateRotationY(MathHelper.ToRadians(45)) *
                                                                       Matrix.CreateRotationZ(MathHelper.ToRadians(-5)) *
                                                                       Matrix.CreateTranslation(
-                                                                          new Vector3(-20f, 0f, -25f)));
+                                                                          new Vector3(-40f, 0f, -45f)));
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();

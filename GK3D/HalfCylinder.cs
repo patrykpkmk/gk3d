@@ -17,21 +17,20 @@ namespace GK3D
         public List<short> indices; //my laptop can only afford Reach, no HiDef :(
         float radius;
         private float height;
-
+        private Color color;
         int m = 24;
         private double angle;
 
 
-        public HalfCylinder(float rad, float h)
+        public HalfCylinder(float rad, float h, Color color)
         {
             height = h;
             radius = rad;
             angle = Math.PI / (m);
-
+            this.color = color;
             CreateVertices();
             CreateIndices();
-           RotateY(180);
-            RotateX(45);
+          
         }
 
         private void CreateVertices()
@@ -39,20 +38,20 @@ namespace GK3D
             vertices = new List<VertexPositionNormalColor>();
             Vector3 center = new Vector3(0, 0, 0);
             int i = 0;
-            var heightsCollection = new List<float>() {-height, height};
+            var heightsCollection = new List<float>() {0, height};
             foreach (var y in heightsCollection)
             {
                 for (double alfa = 0; alfa <= Math.PI; alfa += angle)
                 {
                     float x = (float) (center.X + radius * Math.Cos(alfa));
                     float z = (float) (center.Z - radius * Math.Sin(alfa));
-                    vertices.Add(new VertexPositionNormalColor(new Vector3(x, y, z),GetNormal(new Vector3(x,y,z)), Color.Violet));
+                    vertices.Add(new VertexPositionNormalColor(new Vector3(x, y, z),GetNormal(new Vector3(x,y,z)),color));
                 }
             }
-            vertices.Add(new VertexPositionNormalColor(new Vector3(0, -height, 0), GetNormal(new Vector3(0, -1, 0)), Color.Violet));
+            vertices.Add(new VertexPositionNormalColor(new Vector3(0, 0, 0), GetNormal(new Vector3(0, 0, 1)),color));
             //vertices.Add(new VertexPositionNormalColor(new Vector3(0, (float) height / 2, 0), new Vector3(1, 0, 0),
             //    Color.Green));
-            vertices.Add(new VertexPositionNormalColor(new Vector3(0, height, 0), GetNormal(new Vector3(0, 1, 0)), Color.Violet));
+            vertices.Add(new VertexPositionNormalColor(new Vector3(0, height, 0), GetNormal(new Vector3(0, 0, 1)), color));
         }
         private Vector3 GetNormal(Vector3 vertex)
         {
@@ -172,6 +171,36 @@ namespace GK3D
             foreach (var point in vertices)
             {
                 posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationZ(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void Translate(Vector3 translation)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateTranslation(translation)));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void Scale(float scaleFactor)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateScale(scaleFactor)));
             }
             int i = 0;
             foreach (var point in posPom)

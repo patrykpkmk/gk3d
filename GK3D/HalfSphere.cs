@@ -17,16 +17,22 @@ namespace GK3D
         float radius;
         int nvertices, nindices;
         GraphicsDevice graphics;
+        private Color color;
 
         private int m = 64;
 
-        public HalfSphere(float Radius)
+        public HalfSphere(float Radius, Color color)
         {
+            this.color = color;
             radius = Radius;
             nvertices = m * m; // 90 vertices in a circle, 90 circles in a sphere
             nindices = m * m * 6;
             CreateSphereVertices();
             CreateIndices();
+
+            //RotateZ(180);
+            //Translate(new Vector3(0,-30,0));
+            //Scale(0.4f);
         }
 
         private void CreateSphereVertices()
@@ -44,7 +50,7 @@ namespace GK3D
                     Matrix yrot = Matrix.CreateRotationY(MathHelper.ToRadians(x * difx)); // rotate circle around y
                     Vector3 point = Vector3.Transform(Vector3.Transform(rad, zrot), yrot); //transformation
 
-                    vertices[x + y * m] = new VertexPositionNormalColor(point, GetNormal(point), Color.Green);
+                    vertices[x + y * m] = new VertexPositionNormalColor(point, GetNormal(point), color);
                 }
             }
         }
@@ -77,6 +83,81 @@ namespace GK3D
                     indices[i++] = upperRight;
                     indices[i++] = lowerRight;
                 }
+            }
+        }
+
+        public void RotateX(int degrees)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationX(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void RotateY(int degrees)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationY(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void RotateZ(int degrees)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateRotationZ(MathHelper.ToRadians(degrees))));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void Translate(Vector3 translation)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateTranslation(translation)));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
+            }
+        }
+
+        public void Scale(float scaleFactor)
+        {
+            List<Vector3> posPom = new List<Vector3>();
+            foreach (var point in vertices)
+            {
+                posPom.Add(Vector3.Transform(point.Position, Matrix.CreateScale(scaleFactor)));
+            }
+            int i = 0;
+            foreach (var point in posPom)
+            {
+                vertices[i] = new VertexPositionNormalColor(point, vertices[i].Normal, vertices[i].Color);
+                i++;
             }
         }
     }
