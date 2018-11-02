@@ -9,8 +9,12 @@
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Phong_model.fx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Revolver.fbx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/rocket.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/SpherePhong.fx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/Spotlight.fx</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

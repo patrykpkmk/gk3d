@@ -41,6 +41,7 @@ namespace GK3D
 
 
         private Effect phongEffect;
+        private Effect phongEffectForSphere;
         private Effect phongEffectForModels;
         private Vector3 viewVector;
         private Matrix[] appleModelTransforms;
@@ -62,6 +63,7 @@ namespace GK3D
         /// </summary>
         protected override void Initialize()
         {
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             // TODO: Add your drawing code here
 
             //CAMERA MATRIX
@@ -149,6 +151,7 @@ namespace GK3D
             revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
 
             phongEffect = Content.Load<Effect>("Phong");
+            phongEffectForSphere = Content.Load<Effect>("SpherePhong");
             phongEffectForModels = Content.Load<Effect>("Phong_model");
         }
 
@@ -189,8 +192,9 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            InitializePhongEffectForSphereGrid();
-            InitializePhongEffectForAppleModel();
+            InitializePhongEffectForGrid();
+            InitializePhongEffectForSphere();
+            InitializePhongEffectForModel();
             DrawSphereWithEffect();
             DrawHalfSphereWithEffect();
             DrawHalfSphereTwoWithEffect();
@@ -204,8 +208,9 @@ namespace GK3D
             base.Draw(gameTime);
         }
 
-        private void InitializePhongEffectForSphereGrid()
+        private void InitializePhongEffectForGrid()
         {
+            phongEffect.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             phongEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
             phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
             viewVector = camera.CameraTarget - camera.CameraPosition;
@@ -225,7 +230,7 @@ namespace GK3D
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
             phongEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
-            Vector3 diffLightDir = new Vector3(-1, -1, 100);
+            Vector3 diffLightDir = new Vector3(0, 0, 1);
             diffLightDir.Normalize();
             phongEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
             phongEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
@@ -238,8 +243,44 @@ namespace GK3D
             phongEffect.Parameters["ViewVector"].SetValue(viewVector);
         }
 
-        private void InitializePhongEffectForAppleModel()
+        private void InitializePhongEffectForSphere()
         {
+            phongEffectForSphere.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            phongEffectForSphere.GraphicsDevice.Clear(Color.CornflowerBlue);
+            phongEffectForSphere.GraphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
+            viewVector = camera.CameraTarget - camera.CameraPosition;
+            viewVector.Normalize();
+
+            phongEffectForSphere.Parameters["World"].SetValue(worldMatrix);
+            phongEffectForSphere.Parameters["View"].SetValue(viewMatrix);
+            phongEffectForSphere.Parameters["Projection"].SetValue(projectionMatrix);
+
+            phongEffectForSphere.Parameters["World"].SetValue(worldMatrix);
+            phongEffectForSphere.Parameters["View"].SetValue(viewMatrix);
+            phongEffectForSphere.Parameters["Projection"].SetValue(projectionMatrix);
+
+            phongEffectForSphere.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
+            phongEffectForSphere.Parameters["AmbientIntensity"].SetValue(0.02f);
+
+            Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
+            phongEffectForSphere.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
+
+            Vector3 diffLightDir = new Vector3(0, 0, 1);
+            diffLightDir.Normalize();
+            phongEffectForSphere.Parameters["DirectionalLightDirection"].SetValue(diffLightDir);
+            phongEffectForSphere.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
+            phongEffectForSphere.Parameters["DiffuseIntensity"].SetValue(0.75f);
+
+            phongEffectForSphere.Parameters["Shininess"].SetValue(100f);
+            phongEffectForSphere.Parameters["SpecularColor"].SetValue(Color.White.ToVector4());
+            phongEffectForSphere.Parameters["SpecularIntensity"].SetValue(0.5f);
+
+            phongEffectForSphere.Parameters["ViewVector"].SetValue(viewVector);
+        }
+
+        private void InitializePhongEffectForModel()
+        {
+            phongEffectForModels.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             phongEffectForModels.GraphicsDevice.Clear(Color.CornflowerBlue);
             phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
             viewVector = camera.CameraTarget - camera.CameraPosition;
@@ -256,7 +297,7 @@ namespace GK3D
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
             phongEffectForModels.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
-            Vector3 diffLightDir = new Vector3(-1, -1, 1);
+            Vector3 diffLightDir = new Vector3(0, 0, 1);
             diffLightDir.Normalize();
             phongEffectForModels.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
             phongEffectForModels.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
@@ -272,10 +313,10 @@ namespace GK3D
 
         private void DrawSphereWithEffect()
         {
-            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in phongEffectForSphere.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                phongEffectForSphere.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
                     PrimitiveType.TriangleList,
                     planetoidSphere.vertices, 0,
                     planetoidSphere.vertices.Length, planetoidSphere.indices, 0, planetoidSphere.indices.Length / 3);
