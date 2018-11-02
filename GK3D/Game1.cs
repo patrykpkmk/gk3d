@@ -151,8 +151,8 @@ namespace GK3D
             revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
 
             phongEffect = Content.Load<Effect>("Phong");
-            phongEffectForSphere = Content.Load<Effect>("SpherePhong");
-            phongEffectForModels = Content.Load<Effect>("Phong_model");
+            phongEffectForSphere = Content.Load<Effect>("SpherePhongSpotlight");
+            phongEffectForModels = Content.Load<Effect>("PhongModel");
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace GK3D
         {
             phongEffect.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             phongEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
-            phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+            phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid };
             viewVector = camera.CameraTarget - camera.CameraPosition;
             viewVector.Normalize();
 
@@ -230,9 +230,9 @@ namespace GK3D
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
             phongEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
-            Vector3 diffLightDir = new Vector3(0, 0, 1);
-            diffLightDir.Normalize();
-            phongEffect.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
+            Vector3 directionalLightDirection = new Vector3(0, 0, 1);
+            directionalLightDirection.Normalize();
+            phongEffect.Parameters["DirectionalLightDirection"].SetValue(directionalLightDirection);
             phongEffect.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
             phongEffect.Parameters["DiffuseIntensity"].SetValue(0.75f);
 
@@ -255,9 +255,6 @@ namespace GK3D
             phongEffectForSphere.Parameters["View"].SetValue(viewMatrix);
             phongEffectForSphere.Parameters["Projection"].SetValue(projectionMatrix);
 
-            phongEffectForSphere.Parameters["World"].SetValue(worldMatrix);
-            phongEffectForSphere.Parameters["View"].SetValue(viewMatrix);
-            phongEffectForSphere.Parameters["Projection"].SetValue(projectionMatrix);
 
             phongEffectForSphere.Parameters["AmbientColor"].SetValue(Color.White.ToVector4());
             phongEffectForSphere.Parameters["AmbientIntensity"].SetValue(0.02f);
@@ -265,9 +262,9 @@ namespace GK3D
             Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
             phongEffectForSphere.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
 
-            Vector3 diffLightDir = new Vector3(0, 0, 1);
-            diffLightDir.Normalize();
-            phongEffectForSphere.Parameters["DirectionalLightDirection"].SetValue(diffLightDir);
+            Vector3 directionalLightDirection = new Vector3(0, 0, 1);
+            directionalLightDirection.Normalize();
+            phongEffectForSphere.Parameters["DirectionalLightDirection"].SetValue(directionalLightDirection);
             phongEffectForSphere.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
             phongEffectForSphere.Parameters["DiffuseIntensity"].SetValue(0.75f);
 
@@ -276,18 +273,34 @@ namespace GK3D
             phongEffectForSphere.Parameters["SpecularIntensity"].SetValue(0.5f);
 
             phongEffectForSphere.Parameters["ViewVector"].SetValue(viewVector);
+
+
+            phongEffectForSphere.Parameters["SpotlightOneLightPosition"].SetValue(new Vector3(0f,20f,0));
+            phongEffectForSphere.Parameters["SpotlightOneSpotDirection"].SetValue(new Vector3(0f,-1f,0));
+            phongEffectForSphere.Parameters["SpotlightOneLightRadius"].SetValue(50f);
+            phongEffectForSphere.Parameters["SpotlightOneSpotDecayExponent"].SetValue(5f);
+            phongEffectForSphere.Parameters["SpotlightOneSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(20)));
+
+
+            phongEffectForSphere.Parameters["SpotlightTwoLightPosition"].SetValue(new Vector3(-20f, 0f, 0));
+            phongEffectForSphere.Parameters["SpotlightTwoSpotDirection"].SetValue(new Vector3(1f, 0f, 0));
+            phongEffectForSphere.Parameters["SpotlightTwoLightRadius"].SetValue(50f);
+            phongEffectForSphere.Parameters["SpotlightTwoSpotDecayExponent"].SetValue(5f);
+            phongEffectForSphere.Parameters["SpotlightTwoSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(20)));
+
+
         }
 
         private void InitializePhongEffectForModel()
         {
             phongEffectForModels.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             phongEffectForModels.GraphicsDevice.Clear(Color.CornflowerBlue);
-            phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid};
+            phongEffectForModels.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid };
             viewVector = camera.CameraTarget - camera.CameraPosition;
             viewVector.Normalize();
 
             phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
-
+            phongEffectForModels.Parameters["World"].SetValue(worldMatrix);
             phongEffectForModels.Parameters["View"].SetValue(viewMatrix);
             phongEffectForModels.Parameters["Projection"].SetValue(projectionMatrix);
 
@@ -299,7 +312,7 @@ namespace GK3D
 
             Vector3 diffLightDir = new Vector3(0, 0, 1);
             diffLightDir.Normalize();
-            phongEffectForModels.Parameters["DiffuseLightDirection"].SetValue(diffLightDir);
+            phongEffectForModels.Parameters["DirectionalLightDirection"].SetValue(diffLightDir);
             phongEffectForModels.Parameters["DiffuseColor"].SetValue(Color.White.ToVector4());
             phongEffectForModels.Parameters["DiffuseIntensity"].SetValue(0.75f);
 
@@ -367,6 +380,7 @@ namespace GK3D
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
                     phongEffectForModels.Parameters["World"].SetValue(appleModelTransforms[mesh.ParentBone.Index] *
                                                                       Matrix.CreateTranslation(
                                                                           appleStelliteOneTransaltion) * worldMatrix);
@@ -382,6 +396,7 @@ namespace GK3D
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Red.ToVector4());
                     phongEffectForModels.Parameters["World"].SetValue(appleModelTransforms[mesh.ParentBone.Index] *
                                                                       Matrix.CreateTranslation(
                                                                           appleStelliteTwoTransaltion) * worldMatrix);
@@ -403,7 +418,7 @@ namespace GK3D
                                                                       Matrix.CreateRotationX(MathHelper.ToRadians(-45)) *
                                                                       Matrix.CreateScale(new Vector3(0.02f, 0.02f, 0.02f)) *
                                                                       Matrix.CreateTranslation(
-                                                                          new Vector3(-10f, 27f, -25f)));
+                                                                          new Vector3(0f, 25f, -25f)));
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();
@@ -419,10 +434,10 @@ namespace GK3D
                     phongEffectForModels.Parameters["ModelColor"].SetValue(Color.OrangeRed.ToVector4());
                     phongEffectForModels.Parameters["World"].SetValue(revolverModelTransforms[mesh.ParentBone.Index] *
                                                                       Matrix.CreateScale(new Vector3(0.01f, 0.01f, 0.01f)) *
-                                                                      Matrix.CreateRotationY(MathHelper.ToRadians(45)) *
-                                                                      Matrix.CreateRotationZ(MathHelper.ToRadians(-5)) *
+                                                                      Matrix.CreateRotationY(MathHelper.ToRadians(90)) *
+                                                                      //Matrix.CreateRotationZ(MathHelper.ToRadians(-5)) *
                                                                       Matrix.CreateTranslation(
-                                                                          new Vector3(-40f, 0f, -45f)));
+                                                                          new Vector3(-40f, 0f, 0f)));
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();

@@ -59,7 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Shaders\Phong.fx" />
-    <Content Include="Content\Shaders\Phong_model.fx" />
+    <Content Include="Content\Shaders\PhongModel.fx" />
+    <Content Include="Content\Shaders\SpherePhongSpotlight.fx" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>

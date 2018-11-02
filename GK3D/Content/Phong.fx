@@ -16,7 +16,7 @@ float AmbientIntensity = 0.1;
 
 float4x4 WorldInverseTranspose;
 
-float3 DiffuseLightDirection = float3(1, 0, 0);
+float3 DirectionalLightDirection = float3(1, 0, 0);
 float4 DiffuseColor = float4(1, 1, 1, 1);
 float DiffuseIntensity = 1.0;
 
@@ -48,25 +48,26 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     output.Position = mul(viewPosition, Projection);
 
     float4 normal = normalize(mul(input.Normal, WorldInverseTranspose));
-    float lightIntensity = dot(normal, DiffuseLightDirection);
-    output.Color = saturate(input.Color + max(DiffuseColor * DiffuseIntensity * lightIntensity,0));
-
+    
+	output.Color = input.Color;
     output.Normal = normal;
 
     return output;
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
-{
-    float3 light = normalize(DiffuseLightDirection);
-    float3 normal = normalize(input.Normal);
+{    
+	float3 normal = normalize(input.Normal);
+	float lightIntensity = dot(normal, DirectionalLightDirection);
+    float4 diffuse = saturate(max(DiffuseColor * DiffuseIntensity * lightIntensity,0));
+	
+    float3 light = normalize(DirectionalLightDirection);
     float3 r = normalize(2 * dot(normal, light) * normal - light);
     float3 v = normalize(mul(normalize(ViewVector), World));
-
     float dotProduct = -dot(r, v);
     float4 specular = SpecularIntensity * SpecularColor * max(pow(dotProduct, Shininess), 0) * length(input.Color);
 
-    return saturate(input.Color + max(AmbientColor * AmbientIntensity,0) + max(specular,0));
+    return saturate(input.Color + max(AmbientColor * AmbientIntensity,0) + max(diffuse,0)+ max(specular,0));
 }
 
 technique Specular

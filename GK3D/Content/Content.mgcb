@@ -38,11 +38,11 @@
 /processorParam:DebugMode=Auto
 /build:Phong.fx
 
-#begin Phong_model.fx
+#begin PhongModel.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:Phong_model.fx
+/build:PhongModel.fx
 
 #begin Revolver.fbx
 /importer:FbxImporter
@@ -82,15 +82,9 @@
 /processorParam:TextureFormat=Compressed
 /build:rocket.fbx
 
-#begin SpherePhong.fx
+#begin SpherePhongSpotlight.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:SpherePhong.fx
-
-#begin Spotlight.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Spotlight.fx
+/build:SpherePhongSpotlight.fx
 
