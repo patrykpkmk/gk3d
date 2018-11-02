@@ -278,8 +278,8 @@ namespace GK3D
             phongEffectForSphere.Parameters["SpotlightOneLightRadius"].SetValue(50f);
             phongEffectForSphere.Parameters["SpotlightOneSpotDecayExponent"].SetValue(2f);
             phongEffectForSphere.Parameters["SpotlightOneSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(30)));
-            phongEffectForSphere.Parameters["SpotlightOneDiffuseColor"].SetValue(Color.DarkRed.ToVector4());
-            phongEffectForSphere.Parameters["SpotlightOneSpecularColor"].SetValue(Color.DarkRed.ToVector4());
+            phongEffectForSphere.Parameters["SpotlightOneDiffuseColor"].SetValue(lights.SpotlightOneDiffuseColor);
+            phongEffectForSphere.Parameters["SpotlightOneSpecularColor"].SetValue(lights.SpotlightOneSpecularColor);
 
 
             phongEffectForSphere.Parameters["SpotlightTwoLightPosition"].SetValue(lights.SpotlightTwoLightPosition);
@@ -287,8 +287,8 @@ namespace GK3D
             phongEffectForSphere.Parameters["SpotlightTwoLightRadius"].SetValue(50f);
             phongEffectForSphere.Parameters["SpotlightTwoSpotDecayExponent"].SetValue(5f);
             phongEffectForSphere.Parameters["SpotlightTwoSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(20)));
-            phongEffectForSphere.Parameters["SpotlightTwoDiffuseColor"].SetValue(Color.DarkRed.ToVector4());
-            phongEffectForSphere.Parameters["SpotlightTwoSpecularColor"].SetValue(Color.DarkRed.ToVector4());
+            phongEffectForSphere.Parameters["SpotlightTwoDiffuseColor"].SetValue(lights.SpotlightTwoDiffuseColor);
+            phongEffectForSphere.Parameters["SpotlightTwoSpecularColor"].SetValue(lights.SpotlightTwoSpecularColor);
 
 
         }
