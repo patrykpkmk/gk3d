@@ -89,13 +89,13 @@ namespace GK3D
             }
 
             //Look Left/Look Right (rozlgladanie sie na boki)
-            if (keyboardState.IsKeyDown(Keys.L))
+            if (keyboardState.IsKeyDown(Keys.R))
             {
                 CameraForward = Vector3.Transform(CameraForward,
                     Matrix.CreateFromAxisAngle(CameraUpVector, MathHelper.ToRadians(-2 * cameraMoveStep)));
                 CameraForward.Normalize();
             }
-            if (keyboardState.IsKeyDown(Keys.R))
+            if (keyboardState.IsKeyDown(Keys.L))
             {
                 CameraForward = Vector3.Transform(CameraForward,
                     Matrix.CreateFromAxisAngle(CameraUpVector, MathHelper.ToRadians(2 * cameraMoveStep)));
@@ -103,13 +103,13 @@ namespace GK3D
             }
 
             //Rotate
-            if (keyboardState.IsKeyDown(Keys.A))
+            if (keyboardState.IsKeyDown(Keys.S))
             {
                 CameraUpVector = Vector3.Transform(CameraUpVector,
                     Matrix.CreateFromAxisAngle(CameraForward, MathHelper.ToRadians(-2 * cameraMoveStep)));
                 CameraUpVector.Normalize();
             }
-            if (keyboardState.IsKeyDown(Keys.S))
+            if (keyboardState.IsKeyDown(Keys.A))
             {
                 CameraUpVector = Vector3.Transform(CameraUpVector,
                     Matrix.CreateFromAxisAngle(CameraForward, MathHelper.ToRadians(2 * cameraMoveStep)));
