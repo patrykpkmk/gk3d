@@ -1,0 +1,13 @@
+Poruszanie kamer¹:
+1. Guzik 'f': poruszanie do przodu, 
+2. Guzik 'b': poruszanie w ty³
+3. Guzik 'strza³ka w lewo': poruszanie w lewo 
+4. Guzik 'strza³ka w prawo': poruszanie w prawo
+5. Guzik 'strza³ka w górê': poruszanie w górê 
+6. Guzik 'strza³ka w dó³': poruszanie w dó³ 
+7. Guzik 'u': spogl¹danie góra 
+8. Guzik 'd': spogl¹danie dó³
+9. Guzik 'r': rozgl¹danie siê na boki w prawo
+10. Guzik 'l': rozgl¹danie siê na boki w lewo
+11. Guzik 's': obrót kamery zgodnie do ruchu wskazówek zegara wokó³ aktualnego kierunku „w przód”, 
+12. Guzik 'a': obrót kamery przeciwnie do ruchu wskazówek zegara wokó³ aktualnego kierunku „w przód”

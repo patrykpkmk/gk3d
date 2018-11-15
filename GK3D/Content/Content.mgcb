@@ -32,11 +32,11 @@
 /processorParam:TextureFormat=Compressed
 /build:apple.fbx
 
-#begin Phong.fx
+#begin PhongGrid.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:Phong.fx
+/build:PhongGrid.fx
 
 #begin PhongModel.fx
 /importer:EffectImporter
@@ -81,10 +81,4 @@
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
 /build:rocket.fbx
-
-#begin SpherePhongSpotlight.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:SpherePhongSpotlight.fx
 

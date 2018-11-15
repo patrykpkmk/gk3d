@@ -70,7 +70,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {   
-	float4 firstSpotLightColor = input.Color + max(AmbientColor * AmbientIntensity,0);
+	float4 firstSpotLightColor = max(AmbientColor * AmbientIntensity * input.Color,0);
 	
 	float3 normal = normalize(input.Normal);
 	
@@ -89,7 +89,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 		float dotProduct = -dot(r, v);
 		float4 specular = SpecularIntensity * SpotlightOneSpecularColor * max(pow(dotProduct, Shininess), 0) * length(input.Color);
 		
-		firstSpotLightColor = saturate(firstSpotLightColor + attenuation * spotIntensity * (max(diffuse, 0) + max(0,specular)) );
+		firstSpotLightColor = saturate(firstSpotLightColor + attenuation * spotIntensity * (max(diffuse * input.Color, 0) + max(0,specular)) );
 	}
 	float4 secondSpotLightColor = firstSpotLightColor;
 	float3 lightVector2 = normalize(SpotlightTwoLightPosition - input.OriginalPosition);
@@ -107,7 +107,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 		float dotProduct2 = -dot(r2, v2);
 		float4 specular2 = SpecularIntensity * SpotlightTwoSpecularColor * max(pow(dotProduct2, Shininess), 0) * length(input.Color);
 
-		secondSpotLightColor = secondSpotLightColor + saturate(attenuation2 * spotIntensity2 * (max(diffuse2, 0) + max(0,specular2)) );
+		secondSpotLightColor = secondSpotLightColor + saturate(attenuation2 * spotIntensity2 * (max(diffuse2 * input.Color, 0) + max(0,specular2)) );
 	}
 	
 	float4 directionalLightColor = secondSpotLightColor;
@@ -120,7 +120,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     float dotProduct3 = -dot(r3, v3);
     float4 specular3 = SpecularIntensity * SpecularColor * max(pow(dotProduct3, Shininess), 0) * length(input.Color);
 
-    return saturate(directionalLightColor + max(diffuse3,0)+ max(specular3,0));
+    return saturate(directionalLightColor + max(diffuse3 * input.Color,0)+ max(specular3,0));
 	
 }
 

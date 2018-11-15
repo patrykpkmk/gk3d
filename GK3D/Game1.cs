@@ -39,7 +39,6 @@ namespace GK3D
         private Vector3 appleStelliteTwoTransaltion;
 
 
-        private Effect phongEffect;
         private Effect phongEffectForSphere;
         private Effect phongEffectForModels;
         private Vector3 viewVector;
@@ -105,7 +104,7 @@ namespace GK3D
             planetoidSphereRadius = 15;
             planetoidSphere = new Sphere(planetoidSphereRadius);
 
-            halfSphere = new HalfSphere(planetoidSphereRadius, Color.Black);
+            halfSphere = new HalfSphere(planetoidSphereRadius, Color.LightCoral);
             halfSphere.RotateZ(180);
             halfSphere.Translate(new Vector3(0, -75, 0));
             halfSphere.Scale(0.2f);
@@ -152,8 +151,7 @@ namespace GK3D
             revolverModelTransforms = new Matrix[revolverModel.Bones.Count];
             revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
 
-            phongEffect = Content.Load<Effect>("Phong");
-            phongEffectForSphere = Content.Load<Effect>("SpherePhongSpotlight");
+            phongEffectForSphere = Content.Load<Effect>("PhongGrid");
             phongEffectForModels = Content.Load<Effect>("PhongModel");
         }
 
@@ -194,7 +192,6 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            InitializePhongEffectForGrid();
             InitializePhongEffectForSphere();
             InitializePhongEffectForModel();
             DrawSphereWithEffect();
@@ -208,39 +205,6 @@ namespace GK3D
             DrawRevolver();
 
             base.Draw(gameTime);
-        }
-
-        private void InitializePhongEffectForGrid()
-        {
-            phongEffect.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            phongEffect.GraphicsDevice.Clear(Color.CornflowerBlue);
-            phongEffect.GraphicsDevice.RasterizerState = new RasterizerState() {FillMode = FillMode.Solid };
-            viewVector = camera.CameraTarget - camera.CameraPosition;
-            viewVector.Normalize();
-
-            phongEffect.Parameters["World"].SetValue(worldMatrix);
-            phongEffect.Parameters["View"].SetValue(viewMatrix);
-            phongEffect.Parameters["Projection"].SetValue(projectionMatrix);
-
-            phongEffect.Parameters["World"].SetValue(worldMatrix);
-            phongEffect.Parameters["View"].SetValue(viewMatrix);
-            phongEffect.Parameters["Projection"].SetValue(projectionMatrix);
-
-            phongEffect.Parameters["AmbientColor"].SetValue(lights.DirectionalLightAmbientColor);
-            phongEffect.Parameters["AmbientIntensity"].SetValue(0.02f);
-
-            Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(worldMatrix));
-            phongEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTransposeMatrix);
-
-            phongEffect.Parameters["DirectionalLightDirection"].SetValue(lights.DirectionalLightDirection);
-            phongEffect.Parameters["DiffuseColor"].SetValue(lights.DirectionalLightDiffuseColor);
-            phongEffect.Parameters["DiffuseIntensity"].SetValue(0.75f);
-
-            phongEffect.Parameters["Shininess"].SetValue(100f);
-            phongEffect.Parameters["SpecularColor"].SetValue(lights.DirectionalLightSpecularColor);
-            phongEffect.Parameters["SpecularIntensity"].SetValue(0.5f);
-
-            phongEffect.Parameters["ViewVector"].SetValue(viewVector);
         }
 
         private void InitializePhongEffectForSphere()
@@ -264,11 +228,11 @@ namespace GK3D
 
             phongEffectForSphere.Parameters["DirectionalLightDirection"].SetValue(lights.DirectionalLightDirection);
             phongEffectForSphere.Parameters["DiffuseColor"].SetValue(lights.DirectionalLightDiffuseColor);
-            phongEffectForSphere.Parameters["DiffuseIntensity"].SetValue(0.75f);
+            phongEffectForSphere.Parameters["DiffuseIntensity"].SetValue(0.9f);
 
             phongEffectForSphere.Parameters["Shininess"].SetValue(100f);
             phongEffectForSphere.Parameters["SpecularColor"].SetValue(lights.DirectionalLightSpecularColor);
-            phongEffectForSphere.Parameters["SpecularIntensity"].SetValue(0.5f);
+            phongEffectForSphere.Parameters["SpecularIntensity"].SetValue(0.9f);
 
             phongEffectForSphere.Parameters["ViewVector"].SetValue(viewVector);
 
@@ -313,13 +277,31 @@ namespace GK3D
 
             phongEffectForModels.Parameters["DirectionalLightDirection"].SetValue(lights.DirectionalLightDirection);
             phongEffectForModels.Parameters["DiffuseColor"].SetValue(lights.DirectionalLightDiffuseColor);
-            phongEffectForModels.Parameters["DiffuseIntensity"].SetValue(0.75f);
+            phongEffectForModels.Parameters["DiffuseIntensity"].SetValue(0.9f);
 
             phongEffectForModels.Parameters["Shininess"].SetValue(100f);
             phongEffectForModels.Parameters["SpecularColor"].SetValue(lights.DirectionalLightSpecularColor);
-            phongEffectForModels.Parameters["SpecularIntensity"].SetValue(0.5f);
+            phongEffectForModels.Parameters["SpecularIntensity"].SetValue(0.9f);
 
             phongEffectForModels.Parameters["ViewVector"].SetValue(viewVector);
+
+
+            phongEffectForModels.Parameters["SpotlightOneLightPosition"].SetValue(lights.SpotlightOneLightPosition);
+            phongEffectForModels.Parameters["SpotlightOneSpotDirection"].SetValue(lights.SpotlightOneSpotDirection);
+            phongEffectForModels.Parameters["SpotlightOneLightRadius"].SetValue(50f);
+            phongEffectForModels.Parameters["SpotlightOneSpotDecayExponent"].SetValue(5f);
+            phongEffectForModels.Parameters["SpotlightOneSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(10)));
+            phongEffectForModels.Parameters["SpotlightOneDiffuseColor"].SetValue(lights.SpotlightOneDiffuseColor);
+            phongEffectForModels.Parameters["SpotlightOneSpecularColor"].SetValue(lights.SpotlightOneSpecularColor);
+
+
+            phongEffectForModels.Parameters["SpotlightTwoLightPosition"].SetValue(lights.SpotlightTwoLightPosition);
+            phongEffectForModels.Parameters["SpotlightTwoSpotDirection"].SetValue(lights.SpotlightTwoSpotDirection);
+            phongEffectForModels.Parameters["SpotlightTwoLightRadius"].SetValue(50f);
+            phongEffectForModels.Parameters["SpotlightTwoSpotDecayExponent"].SetValue(5f);
+            phongEffectForModels.Parameters["SpotlightTwoSpotLightAngleCosine"].SetValue((float)Math.Cos(MathHelper.ToRadians(20)));
+            phongEffectForModels.Parameters["SpotlightTwoDiffuseColor"].SetValue(lights.SpotlightTwoDiffuseColor);
+            phongEffectForModels.Parameters["SpotlightTwoSpecularColor"].SetValue(lights.SpotlightTwoSpecularColor);
         }
 
 
@@ -337,10 +319,10 @@ namespace GK3D
 
         private void DrawHalfSphereWithEffect()
         {
-            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in phongEffectForSphere.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                phongEffectForSphere.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
                     PrimitiveType.TriangleList,
                     halfSphere.vertices, 0,
                     halfSphere.vertices.Length, halfSphere.indices, 0, halfSphere.indices.Length / 3);
@@ -349,10 +331,10 @@ namespace GK3D
 
         private void DrawHalfSphereTwoWithEffect()
         {
-            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in phongEffectForSphere.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                phongEffectForSphere.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
                     PrimitiveType.TriangleList,
                     halfSphereTwo.vertices, 0,
                     halfSphereTwo.vertices.Length, halfSphereTwo.indices, 0, halfSphereTwo.indices.Length / 3);
@@ -361,12 +343,12 @@ namespace GK3D
 
         private void DrawHalfCylinderWithEffect()
         {
-            foreach (EffectPass pass in phongEffect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in phongEffectForSphere.CurrentTechnique.Passes)
             {
                 pass.Apply();
 
 
-                phongEffect.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
+                phongEffectForSphere.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalColor>(
                     PrimitiveType.TriangleList,
                     halfCylinder.vertices.ToArray(), 0,
                     halfCylinder.vertices.Count, halfCylinder.indices.ToArray(), 0, halfCylinder.indices.Count / 3);
@@ -412,7 +394,7 @@ namespace GK3D
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Brown.ToVector4());
+                    phongEffectForModels.Parameters["ModelColor"].SetValue(Color.Yellow.ToVector4());
                     phongEffectForModels.Parameters["World"].SetValue(rocketModelTransforms[mesh.ParentBone.Index] *
                                                                       Matrix.CreateRotationX(MathHelper.ToRadians(-45)) *
                                                                       Matrix.CreateScale(new Vector3(0.02f, 0.02f, 0.02f)) *
