@@ -49,3 +49,4 @@ C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\spaceship.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\dog.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\PhongModel.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\PhongGrid.xnb
+C:\Gk3drepo\gk3d\GK3D\obj\x86\Debug\GK3D.csprojResolveAssemblyReference.cache
