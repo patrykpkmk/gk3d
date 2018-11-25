@@ -25,9 +25,9 @@ namespace GK3D
         int planetoidSphereRadius;
 
         HalfCylinder halfCylinder;
-        private Model robotModel;
         private Model rocketModel;
         private Model revolverModel;
+        private Model  cubeModel;
 
         Sphere planetoidSphere;
         HalfSphere halfSphere;
@@ -46,10 +46,18 @@ namespace GK3D
         private Matrix[] robotModelTransforms;
         private Matrix[] rocketModelTransforms;
         private Matrix[] revolverModelTransforms;
-
-        private Texture2D textureChess;
+        private Matrix[] cubeModelTransforms;
 
         private Lights lights;
+
+        //Textures
+        private Texture2D textureChess;
+        Skybox skybox;
+
+        //Vector3 cameraPosition;
+        float angle = 0;
+        float distance = 20;
+
 
         public Game1()
         {
@@ -115,10 +123,11 @@ namespace GK3D
             halfSphereTwo.Translate(new Vector3(0, -104, 0));
             halfSphereTwo.Scale(0.2f);
 
-            halfCylinder = new HalfCylinder(4, 8, Color.Blue);
+            halfCylinder = new HalfCylinder(4, 8, Color.Turquoise);
             halfCylinder.Scale(0.5f);
-            halfCylinder.RotateY(180);
-            halfCylinder.Translate(new Vector3(0, -24.1f, 0));
+            halfCylinder.RotateY(0);
+            halfCylinder.RotateX(90);
+            halfCylinder.Translate(new Vector3(0, -22.8f, 0));
 
             appleStelliteOneTransaltion = new Vector3(25, 25, 0);
             appleStelliteTwoTransaltion = new Vector3(-25, 0, 0);
@@ -141,10 +150,6 @@ namespace GK3D
             appleModelTransforms = new Matrix[appleModel.Bones.Count];
             appleModel.CopyAbsoluteBoneTransformsTo(appleModelTransforms);
 
-            robotModel = Content.Load<Model>("robot");
-            robotModelTransforms = new Matrix[robotModel.Bones.Count];
-            robotModel.CopyAbsoluteBoneTransformsTo(robotModelTransforms);
-
             rocketModel = Content.Load<Model>("rocket");
             rocketModelTransforms = new Matrix[rocketModel.Bones.Count];
             rocketModel.CopyAbsoluteBoneTransformsTo(rocketModelTransforms);
@@ -153,10 +158,15 @@ namespace GK3D
             revolverModelTransforms = new Matrix[revolverModel.Bones.Count];
             revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
 
+            cubeModel = Content.Load<Model>("cube");
+            cubeModelTransforms = new Matrix[cubeModel.Bones.Count];
+            cubeModel.CopyAbsoluteBoneTransformsTo(cubeModelTransforms);
+
             phongEffectForSphere = Content.Load<Effect>("PhongGrid");
             phongEffectForModels = Content.Load<Effect>("PhongModel");
 
             textureChess = Content.Load<Texture2D>("chess");
+            skybox = new Skybox("EmptySpace", Content);
         }
 
         /// <summary>
@@ -196,6 +206,8 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+           
+
             InitializePhongEffectForSphere();
             InitializePhongEffectForModel();
             DrawSphereWithEffect();
@@ -208,8 +220,20 @@ namespace GK3D
             DrawRocket();
             DrawRevolver();
 
+            DrawSkyBox();
+
 
             base.Draw(gameTime);
+        }
+
+        private void DrawSkyBox()
+        {
+            RasterizerState pom = spriteBatch.GraphicsDevice.RasterizerState;
+            RasterizerState r = new RasterizerState();
+            r.CullMode = CullMode.CullClockwiseFace;
+            spriteBatch.GraphicsDevice.RasterizerState = r;
+            skybox.Draw(viewMatrix, projectionMatrix, camera.CameraPosition);
+            spriteBatch.GraphicsDevice.RasterizerState = pom;
         }
 
         private void InitializePhongEffectForSphere()
@@ -391,7 +415,7 @@ namespace GK3D
                     phongEffectForModels.Parameters["World"].SetValue(appleModelTransforms[mesh.ParentBone.Index] *
                                                                       Matrix.CreateTranslation(
                                                                           appleStelliteTwoTransaltion) * worldMatrix);
-                    part.Effect.CurrentTechnique = part.Effect.Techniques["NotTextured"];
+                    part.Effect.CurrentTechnique = part.Effect.Techniques["Textured"];
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();
@@ -430,11 +454,13 @@ namespace GK3D
                                                                       //Matrix.CreateRotationZ(MathHelper.ToRadians(-5)) *
                                                                       Matrix.CreateTranslation(
                                                                           new Vector3(-40f, 0f, 0f)));
-                    part.Effect.CurrentTechnique = part.Effect.Techniques["Textured"];
+                    part.Effect.CurrentTechnique = part.Effect.Techniques["NotTextured"];
                     part.Effect = phongEffectForModels;
                 }
                 mesh.Draw();
             }
         }
+
+      
     }
 }

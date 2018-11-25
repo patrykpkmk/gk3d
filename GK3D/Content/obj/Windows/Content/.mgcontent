@@ -6,12 +6,20 @@
   <SourceFiles>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/apple.fbx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/chess.jpg</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/cube.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/EmptySpace.dds</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/PhongGrid.fx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/PhongModel.fx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/Revolver.fbx</File>
     <File>C:/Gk3drepo/gk3d/GK3D/Content/rocket.fbx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/Skybox.fx</File>
+    <File>C:/Gk3drepo/gk3d/GK3D/Content/Sunset.dds</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

@@ -49,5 +49,8 @@ C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\spaceship.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\dog.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\PhongModel.xnb
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\PhongGrid.xnb
-C:\Gk3drepo\gk3d\GK3D\obj\x86\Debug\GK3D.csprojResolveAssemblyReference.cache
 C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\chess.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\cube.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\EmptySpace.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\Skybox.xnb
+C:\Gk3drepo\gk3d\GK3D\bin\Windows\x86\Debug\Content\Sunset.xnb
