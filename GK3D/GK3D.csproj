@@ -63,6 +63,7 @@
     <Content Include="Content\Shaders\PhongModel.fx" />
     <Content Include="Content\Shaders\SpherePhongSpotlight.fx" />
     <Content Include="Icon.ico" />
+    <Content Include="Content\Textures\chess.jpg" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
