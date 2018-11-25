@@ -27,7 +27,6 @@ namespace GK3D
         HalfCylinder halfCylinder;
         private Model rocketModel;
         private Model revolverModel;
-        private Model  cubeModel;
 
         Sphere planetoidSphere;
         HalfSphere halfSphere;
@@ -46,13 +45,18 @@ namespace GK3D
         private Matrix[] robotModelTransforms;
         private Matrix[] rocketModelTransforms;
         private Matrix[] revolverModelTransforms;
-        private Matrix[] cubeModelTransforms;
+        private Matrix[] untexturedSphereForReflectionModelTransforms;
 
         private Lights lights;
 
         //Textures
         private Texture2D textureChess;
         Skybox skybox;
+
+        //EnvMapping reflection
+        private Model untexturedSphereForEnvMapReflectionModel;
+        private Effect effectForEnvMapReflection;
+        private TextureCube textureCubeUsedForSkyBox;
 
         //Vector3 cameraPosition;
         float angle = 0;
@@ -158,15 +162,24 @@ namespace GK3D
             revolverModelTransforms = new Matrix[revolverModel.Bones.Count];
             revolverModel.CopyAbsoluteBoneTransformsTo(revolverModelTransforms);
 
-            cubeModel = Content.Load<Model>("cube");
-            cubeModelTransforms = new Matrix[cubeModel.Bones.Count];
-            cubeModel.CopyAbsoluteBoneTransformsTo(cubeModelTransforms);
+
+           
+
 
             phongEffectForSphere = Content.Load<Effect>("PhongGrid");
             phongEffectForModels = Content.Load<Effect>("PhongModel");
 
+            //Texturing and skybox
             textureChess = Content.Load<Texture2D>("chess");
-            skybox = new Skybox("EmptySpace", Content);
+            string skyboxTextureName = "Sunset";
+            skybox = new Skybox(skyboxTextureName, Content);
+
+            //EnvMap Reflection 
+            textureCubeUsedForSkyBox = Content.Load<TextureCube>(skyboxTextureName);
+            untexturedSphereForEnvMapReflectionModel = Content.Load<Model>("UntexturedSphere");
+            untexturedSphereForReflectionModelTransforms = new Matrix[untexturedSphereForEnvMapReflectionModel.Bones.Count];
+            untexturedSphereForEnvMapReflectionModel.CopyAbsoluteBoneTransformsTo(untexturedSphereForReflectionModelTransforms);
+            effectForEnvMapReflection = Content.Load<Effect>("ReflectionEnvMap");
         }
 
         /// <summary>
@@ -206,7 +219,7 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-           
+
 
             InitializePhongEffectForSphere();
             InitializePhongEffectForModel();
@@ -220,6 +233,9 @@ namespace GK3D
             DrawRocket();
             DrawRevolver();
 
+
+            DrawSphereModelWithEnvMapReflectionEffect(untexturedSphereForEnvMapReflectionModel, worldMatrix, viewMatrix,
+   projectionMatrix);
             DrawSkyBox();
 
 
@@ -461,6 +477,26 @@ namespace GK3D
             }
         }
 
-      
+        private void DrawSphereModelWithEnvMapReflectionEffect(Model model, Matrix world, Matrix view, Matrix projection)
+        {
+            foreach (ModelMesh mesh in model.Meshes)
+            {
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    part.Effect = effectForEnvMapReflection;
+                    effectForEnvMapReflection.Parameters["World"].SetValue(untexturedSphereForReflectionModelTransforms[mesh.ParentBone.Index] *
+                                                                      Matrix.CreateScale(new Vector3(3f,3f, 3f)) * Matrix.CreateTranslation(
+                                                                          new Vector3(-40f, 20f, 0f)));
+                    effectForEnvMapReflection.Parameters["View"].SetValue(view);
+                    effectForEnvMapReflection.Parameters["Projection"].SetValue(projection);
+                    effectForEnvMapReflection.Parameters["SkyboxTexture"].SetValue(textureCubeUsedForSkyBox);
+                    effectForEnvMapReflection.Parameters["CameraPosition"].SetValue(camera.CameraPosition);
+                    effectForEnvMapReflection.Parameters["WorldInverseTranspose"].SetValue(
+                                            Matrix.Transpose(Matrix.Invert(world * mesh.ParentBone.Transform)));
+                }
+                mesh.Draw();
+            }
+        }
+
     }
 }
