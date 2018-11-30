@@ -67,7 +67,7 @@ namespace GK3D
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
+           // graphics.IsFullScreen = true;
 
 
 
